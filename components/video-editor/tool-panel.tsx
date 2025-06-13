@@ -5,7 +5,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 export function ToolPanel() {
   return (
-      <ScrollArea className="w-80 h-full bg-card border-r border-border p-4">
+      <ScrollArea className="w-full h-full bg-card border-r border-border p-4">
       <div className="space-y-4">
         <h3 className="text-foreground font-medium text-sm">Text</h3>
         

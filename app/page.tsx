@@ -23,7 +23,7 @@ export default function Home() {
         {/* Left Sidebar with Tools */}
         <Sidebar />
 
-        <div className="h-full flex max-w-full flex-col border-r border-border relative">
+        <div className="h-full flex w-16 flex-col border-r border-border relative">
           {/* Tool Properties Panel */}
           <ToolPanel />
           {/* Properties Panel at the bottom */}
