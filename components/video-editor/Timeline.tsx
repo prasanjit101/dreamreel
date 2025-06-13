@@ -130,9 +130,9 @@ export default function Timeline() {
 
   const playheadPosition = duration > 0 ? (currentTime * pixelsPerSecond) : 0;
 
-  // Group elements by track
+  // Group elements by track - Fixed multi-track support
   const videoElements = timelineElements.filter(el => el.type === 'video' || el.type === 'image');
-  const audioElements = timelineElements.filter(el => el.type === 'audio' || (el.type === 'video' && el.mediaFile));
+  const audioElements = timelineElements.filter(el => el.type === 'audio');
   const textElements = timelineElements.filter(el => el.type === 'text');
 
   return (

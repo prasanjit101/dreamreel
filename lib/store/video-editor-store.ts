@@ -49,6 +49,7 @@ interface VideoEditorState {
     seek: (time: number) => void;
     setVolume: (volume: number) => void;
     setDuration: (duration: number) => void;
+    setCurrentTime: (time: number) => void;
     
     // Media management
     addMediaFile: (file: MediaFile) => void;
@@ -81,9 +82,18 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
     // Playback controls
     play: () => set({ isPlaying: true }),
     pause: () => set({ isPlaying: false }),
-    seek: (time: number) => set({ currentTime: Math.max(0, Math.min(time, get().duration)) }),
+    seek: (time: number) => {
+      const state = get();
+      const clampedTime = Math.max(0, Math.min(time, state.duration));
+      set({ currentTime: clampedTime });
+    },
     setVolume: (volume: number) => set({ volume: Math.max(0, Math.min(1, volume)) }),
     setDuration: (duration: number) => set({ duration }),
+    setCurrentTime: (time: number) => {
+      const state = get();
+      const clampedTime = Math.max(0, Math.min(time, state.duration));
+      set({ currentTime: clampedTime });
+    },
     
     // Media management
     addMediaFile: (file: MediaFile) => {
@@ -105,25 +115,47 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
     
     // Timeline management
     addTimelineElement: (element: TimelineElement) => {
-      set(state => ({
-        timelineElements: [...state.timelineElements, element],
-        duration: Math.max(state.duration, element.startTime + element.duration)
-      }));
+      set(state => {
+        const newElements = [...state.timelineElements, element];
+        const maxEndTime = Math.max(...newElements.map(el => el.startTime + el.duration));
+        return {
+          timelineElements: newElements,
+          duration: Math.max(state.duration, maxEndTime)
+        };
+      });
     },
     
     updateTimelineElement: (id: string, updates: Partial<TimelineElement>) => {
-      set(state => ({
-        timelineElements: state.timelineElements.map(el =>
+      set(state => {
+        const updatedElements = state.timelineElements.map(el =>
           el.id === id ? { ...el, ...updates } : el
-        )
-      }));
+        );
+        
+        // Recalculate total duration based on all elements
+        const maxEndTime = Math.max(...updatedElements.map(el => el.startTime + el.duration));
+        
+        return {
+          timelineElements: updatedElements,
+          duration: Math.max(state.duration, maxEndTime)
+        };
+      });
     },
     
     removeTimelineElement: (id: string) => {
-      set(state => ({
-        timelineElements: state.timelineElements.filter(el => el.id !== id),
-        selectedElementId: state.selectedElementId === id ? null : state.selectedElementId
-      }));
+      set(state => {
+        const filteredElements = state.timelineElements.filter(el => el.id !== id);
+        
+        // Recalculate duration after removal
+        const maxEndTime = filteredElements.length > 0 
+          ? Math.max(...filteredElements.map(el => el.startTime + el.duration))
+          : 0;
+        
+        return {
+          timelineElements: filteredElements,
+          selectedElementId: state.selectedElementId === id ? null : state.selectedElementId,
+          duration: maxEndTime
+        };
+      });
     },
     
     setSelectedElement: (id: string | null) => set({ selectedElementId: id }),

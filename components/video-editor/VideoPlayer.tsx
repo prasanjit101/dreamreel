@@ -36,7 +36,12 @@ export default function VideoPlayer() {
     if (!playerRef.current) return;
     
     const targetFrame = Math.floor(currentTime * 30);
-    playerRef.current.seekTo(targetFrame);
+    const currentFrame = playerRef.current.getCurrentFrame();
+    
+    // Only seek if there's a significant difference to avoid infinite loops
+    if (Math.abs(targetFrame - currentFrame) > 1) {
+      playerRef.current.seekTo(targetFrame);
+    }
   }, [currentTime]);
 
   useEffect(() => {
@@ -48,7 +53,22 @@ export default function VideoPlayer() {
   // Handle time updates from the player
   const handleTimeUpdate = useCallback<CallbackListener<'timeupdate'>>((e) => {
     const newTime = e.detail.frame / 30;
-    actions.seek(newTime);
+    // Use setCurrentTime instead of seek to avoid triggering the seek effect
+    actions.setCurrentTime(newTime);
+  }, [actions]);
+
+  // Handle play/pause events
+  const handlePlay = useCallback<CallbackListener<'play'>>(() => {
+    actions.play();
+  }, [actions]);
+
+  const handlePause = useCallback<CallbackListener<'pause'>>(() => {
+    actions.pause();
+  }, [actions]);
+
+  const handleEnded = useCallback<CallbackListener<'ended'>>(() => {
+    actions.pause();
+    actions.seek(0);
   }, [actions]);
 
   // Handle player events
@@ -58,11 +78,17 @@ export default function VideoPlayer() {
     const player = playerRef.current;
     
     player.addEventListener('timeupdate', handleTimeUpdate);
+    player.addEventListener('play', handlePlay);
+    player.addEventListener('pause', handlePause);
+    player.addEventListener('ended', handleEnded);
     
     return () => {
       player.removeEventListener('timeupdate', handleTimeUpdate);
+      player.removeEventListener('play', handlePlay);
+      player.removeEventListener('pause', handlePause);
+      player.removeEventListener('ended', handleEnded);
     };
-  }, [handleTimeUpdate]);
+  }, [handleTimeUpdate, handlePlay, handlePause, handleEnded]);
 
   // Show upload interface if no media is loaded
   if (!isFileLoaded || timelineElements.length === 0) {
@@ -92,6 +118,7 @@ export default function VideoPlayer() {
           clickToPlay={false}
           doubleClickToFullscreen={true}
           spaceKeyToPlayOrPause={false}
+          loop={false}
         />
       </div>
     </div>

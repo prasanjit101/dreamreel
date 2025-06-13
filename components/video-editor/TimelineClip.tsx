@@ -32,7 +32,7 @@ export function TimelineClip({
   const [resizeStart, setResizeStart] = useState({ x: 0, startTime: 0, duration: 0 });
   const clipRef = useRef<HTMLDivElement>(null);
 
-  const clipWidth = element.duration * pixelsPerSecond;
+  const clipWidth = Math.max(element.duration * pixelsPerSecond, 20); // Minimum width of 20px
   const clipLeft = element.startTime * pixelsPerSecond;
 
   // Get clip color based on type
@@ -123,9 +123,12 @@ export function TimelineClip({
         const deltaTime = deltaX / pixelsPerSecond;
 
         if (isResizing === 'left') {
-          // Resize from left (trim start)
-          const newStartTime = Math.max(0, resizeStart.startTime + deltaTime);
-          const newDuration = Math.max(0.1, resizeStart.duration - deltaTime);
+          // Resize from left (trim start) - keep right edge fixed
+          const maxDelta = resizeStart.duration - 0.1; // Minimum duration of 0.1s
+          const clampedDelta = Math.min(Math.max(-resizeStart.startTime, deltaTime), maxDelta);
+          
+          const newStartTime = resizeStart.startTime + clampedDelta;
+          const newDuration = resizeStart.duration - clampedDelta;
           
           actions.updateTimelineElement(element.id, {
             startTime: newStartTime,
@@ -163,15 +166,15 @@ export function TimelineClip({
     <div
       ref={clipRef}
       className={cn(
-        'absolute rounded border-2 flex items-center px-2 cursor-move select-none transition-all duration-150',
+        'absolute rounded border-2 flex items-center px-2 cursor-move select-none',
         getClipColor(),
         isSelected && 'ring-2 ring-white ring-opacity-50',
-        isDragging && 'opacity-80 scale-105',
-        isResizing && 'opacity-80'
+        isDragging && 'opacity-80 scale-105 z-30',
+        isResizing && 'opacity-80 z-30'
       )}
       style={{
         left: `${clipLeft}px`,
-        width: `${Math.max(clipWidth, 40)}px`,
+        width: `${clipWidth}px`,
         height: `${trackHeight - 8}px`,
         top: '4px'
       }}
@@ -179,12 +182,21 @@ export function TimelineClip({
     >
       {/* Left resize handle */}
       <div
-        className="absolute left-0 top-0 w-2 h-full bg-white/20 cursor-ew-resize opacity-0 hover:opacity-100 transition-opacity"
+        className="absolute left-0 top-0 w-2 h-full bg-white/30 cursor-ew-resize opacity-0 hover:opacity-100 transition-opacity z-10"
         style={{ borderRadius: '2px 0 0 2px' }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsResizing('left');
+          setResizeStart({
+            x: e.clientX,
+            startTime: element.startTime,
+            duration: element.duration
+          });
+        }}
       />
 
       {/* Clip content */}
-      <div className="flex items-center gap-1 text-white text-xs truncate flex-1 min-w-0">
+      <div className="flex items-center gap-1 text-white text-xs truncate flex-1 min-w-0 pointer-events-none">
         {getClipIcon()}
         <span className="truncate">
           {element.mediaFile?.name || element.properties?.text || `${element.type} element`}
@@ -204,13 +216,22 @@ export function TimelineClip({
 
       {/* Right resize handle */}
       <div
-        className="absolute right-0 top-0 w-2 h-full bg-white/20 cursor-ew-resize opacity-0 hover:opacity-100 transition-opacity"
+        className="absolute right-0 top-0 w-2 h-full bg-white/30 cursor-ew-resize opacity-0 hover:opacity-100 transition-opacity z-10"
         style={{ borderRadius: '0 2px 2px 0' }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsResizing('right');
+          setResizeStart({
+            x: e.clientX,
+            startTime: element.startTime,
+            duration: element.duration
+          });
+        }}
       />
 
       {/* Duration indicator */}
       {clipWidth > 60 && (
-        <div className="absolute bottom-0 right-1 text-white/70 text-xs">
+        <div className="absolute bottom-0 right-1 text-white/70 text-xs pointer-events-none">
           {formatDuration(element.duration)}
         </div>
       )}
