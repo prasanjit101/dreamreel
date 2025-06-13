@@ -26,7 +26,7 @@ export interface TimelineElement {
   };
 }
 
-interface VideoEditorState {
+export interface VideoEditorState {
   // Playback state
   isPlaying: boolean;
   currentTime: number;
