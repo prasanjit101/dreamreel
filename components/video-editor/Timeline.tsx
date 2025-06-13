@@ -15,16 +15,16 @@ import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { formatDuration } from '@/utils/mediaUtils';
 
 export default function Timeline() {
-  const { 
-    isPlaying, 
-    currentTime, 
-    duration, 
-    volume, 
+  const {
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
     isFileLoaded,
     timelineElements,
-    actions 
+    actions
   } = useVideoEditorStore();
-  
+
   const [isDragging, setIsDragging] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(volume);
@@ -37,23 +37,23 @@ export default function Timeline() {
 
   const handlePlayheadClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!timelineRef.current || duration === 0) return;
-    
+
     const rect = timelineRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const newTime = percentage * duration;
-    
+
     actions.seek(newTime);
   };
 
   const handlePlayheadDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || !timelineRef.current || duration === 0) return;
-    
+
     const rect = timelineRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const newTime = percentage * duration;
-    
+
     actions.seek(newTime);
   };
 
@@ -107,7 +107,7 @@ export default function Timeline() {
             >
               <SkipBack className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -116,7 +116,7 @@ export default function Timeline() {
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -141,9 +141,9 @@ export default function Timeline() {
 
         {/* Right side - Volume controls */}
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleVolumeToggle}
             className="text-muted-foreground hover:text-foreground p-2"
           >
@@ -200,7 +200,7 @@ export default function Timeline() {
               className="absolute top-0 left-0 h-full bg-primary/30 rounded"
               style={{ width: `${playheadPosition}%` }}
             />
-            
+
             {/* Playhead */}
             <div
               className="absolute top-0 w-1 h-full bg-primary cursor-col-resize"
@@ -215,7 +215,7 @@ export default function Timeline() {
             {/* Video track */}
             <div className="h-12 bg-muted/30 rounded border border-border flex items-center px-3 relative">
               <span className="text-muted-foreground text-xs font-medium">Video</span>
-              
+
               {/* Render video elements */}
               {timelineElements
                 .filter(el => el.type === 'video' || el.type === 'image')
@@ -235,11 +235,11 @@ export default function Timeline() {
                   </div>
                 ))}
             </div>
-            
+
             {/* Audio track */}
             <div className="h-12 bg-muted/30 rounded border border-border flex items-center px-3 relative">
               <span className="text-muted-foreground text-xs font-medium">Audio</span>
-              
+
               {/* Render audio elements */}
               {timelineElements
                 .filter(el => el.type === 'audio' || (el.type === 'video' && el.mediaFile))
