@@ -1,0 +1,38 @@
+---
+applyTo: '**'
+---
+Here is more detailed context about the project that you are tasked to build:
+<project>
+- The project named 'Dreamreel' is a web based video editor app that allows users to create, edit videos and export them in mp4 format
+- It uses remotion for it's video related capabilities
+- Sample workflow:
+    1. User imports a video
+    2. Define a aspect ratio
+    3. User can import or add layer - Multiple video clips, Audio tracks (music, voiceovers), Image files (PNGs, JPEGs, etc.), and Text overlays (titles, captions)
+    4. Adjust duration, trim media, reorder layers or split the video at a point
+    5. Real-time preview panel that reflects edits
+    6. Export the final result as an .mp4 using Remotion Lambda for rendering at scale
+- This platform is designed for creators, marketers, and social media teams who want to create engaging videos quickly with minimal tools.
+</project>
+
+
+For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+When using client-side hooks (useState and useEffect) in a component that's being treated as a Server Component by Next.js, always add the "use client" directive at the top of the file.
+Do not write code that will trigger this error: "Warning: Extra attributes from the server: %s%s""class,style"
+By default, this template supports JSX syntax with Tailwind CSS classes, the shadcn/ui library, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+Use icons from lucide-react for logos.
+
+Here are some additional guidelines to follow:
+<guidelines>
+- write elegant, clean, and maintainable code.
+- keep the app well documented and organized.
+- Add explanatory comments to the code where necessary.
+- Use meaningful variable and function names relevant to the language.
+- Use consistent naming conventions.
+- When working on the frontend, ensure responsiveness and ensure that the UI is beautiful while being consistent with the rest of the UI.
+- When working on the backend, ensure that the code is efficient and follows best practices for security and performance.
+- When working on the database, ensure that the schema is well defined and follows best practices for data integrity and performance.
+- Always use the latest version of the libraries and frameworks unless mentioned otherwise in the documentation, package.json or by the user.
+- please do not delete any files or code to fix the errors. Instead ask the user when you are not sure about what to do.
+- Don't implement long files. Instead try to break down large code into separate components or files or modules
+</guidelines>
