@@ -13,7 +13,6 @@ export function Player() {
         
         <div className="space-y-2">
           <h3 className="text-foreground font-medium">Click to upload</h3>
-          <p className="text-muted-foreground text-sm">Or drag and drop files here</p>
         </div>
       </div>
     </div>

@@ -12,7 +12,9 @@ import {
   Copy,
   ZoomIn,
   ZoomOut,
-  Volume2
+  Volume2,
+  ScissorsLineDashed,
+  Scissors
 } from "lucide-react";
 
 export function Timeline() {
@@ -25,13 +27,11 @@ export function Timeline() {
             <Trash2 className="w-4 h-4" />
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-1">
-            <Split className="w-4 h-4" />
+            <Scissors className="w-4 h-4 -rotate-90" />
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-1">
             <Copy className="w-4 h-4" />
           </Button>
-          
-          <div className="text-muted-foreground text-xs ml-2">Delete | Split | Clone</div>
         </div>
 
         <div className="flex items-center gap-4">

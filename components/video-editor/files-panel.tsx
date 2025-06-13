@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 
-export function ToolPanel() {
+export function FilesPanel() {
   return (
       <ScrollArea className="w-full h-full bg-card border-r border-border p-4">
       <div className="space-y-4">

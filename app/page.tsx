@@ -2,7 +2,7 @@
 
 import { TopBar } from "@/components/video-editor/top-bar";
 import { Sidebar } from "@/components/video-editor/sidebar";
-import { ToolPanel } from "@/components/video-editor/tool-panel";
+import { FilesPanel } from "@/components/video-editor/files-panel";
 import { Player } from "@/components/video-editor/player";
 import { PropertiesPanel } from "@/components/video-editor/properties-panel";
 import { Timeline } from "@/components/video-editor/timeline";
@@ -23,11 +23,11 @@ export default function Home() {
         {/* Left Sidebar with Tools */}
         <Sidebar />
 
-        <div className="h-full flex w-16 flex-col border-r border-border relative">
+        <div className="h-full flex flex-col border-r border-border relative w-70">
           {/* Tool Properties Panel */}
-          <ToolPanel />
+          <FilesPanel />
           {/* Properties Panel at the bottom */}
-          <div className="absolute bottom-0 left-0 w-full">
+          <div className="absolute bottom-0 w-full p-4 left-0">
             <PropertiesPanel />
           </div>
         </div>
