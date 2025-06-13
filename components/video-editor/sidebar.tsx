@@ -19,8 +19,7 @@ export function Sidebar() {
     { icon: Video, label: "Video", active: false },
     { icon: Image, label: "Image", active: false },
     { icon: Type, label: "Text", active: true },
-    { icon: Music, label: "Audio", active: false },
-    { icon: Layers, label: "Layers", active: false },
+      { icon: Music, label: "Audio", active: false },
   ];
 
   return (

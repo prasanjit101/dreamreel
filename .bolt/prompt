@@ -5,11 +5,12 @@ Here is more detailed context about the project that you are tasked to build:
 - Sample workflow:
     1. User imports a video
     2. Define a aspect ratio
-    3. User can import or add layer - Multiple video clips, Audio tracks (music, voiceovers), Image files (PNGs, JPEGs, etc.), and Text overlays (titles, captions)
+    3. User can import or add layer - video, Audio, Images, and Text
     4. Adjust duration, trim media, reorder layers or split the video at a point
     5. Real-time preview panel that reflects edits
     6. Export the final result as an .mp4 using Remotion Lambda for rendering at scale
 - This platform is designed for creators, marketers, and social media teams who want to create engaging videos quickly with minimal tools.
+- The dummy UI has already been implemented. Implement the functionality around the UI using remotion.
 </project>
 
 
@@ -32,4 +33,17 @@ Here are some additional guidelines to follow:
 - Always use the latest version of the libraries and frameworks unless mentioned otherwise in the documentation, package.json or by the user.
 - please do not delete any files or code to fix the errors. Instead ask the user when you are not sure about what to do.
 - Don't implement long files. Instead try to break down large code into separate components or files or modules
+- TO KNOW MORE ABOUT remotion USE `/docs/remotion.md`. It contains information on how to use remotion
 </guidelines>
+
+
+Our updated tech stack -
+<tech_stack>
+- Next js app router 15.3.3
+- Shadcn
+- React
+- Remotion for video implementation
+- Remotion lambda for video rendering
+- Tailwind css for styling
+- Typescript
+</tech_stack>

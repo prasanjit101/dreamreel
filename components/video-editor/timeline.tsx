@@ -16,8 +16,35 @@ import {
   ScissorsLineDashed,
   Scissors
 } from "lucide-react";
+import { useVideoEditorStore } from "@/lib/store/video-editor-store";
+import { useState } from "react";
 
 export function Timeline() {
+  const { isPlaying, currentTime, duration, volume, isFileLoaded, actions } = useVideoEditorStore();
+  const [isDragging, setIsDragging] = useState(false);
+
+  if (!isFileLoaded) {
+    return null; // Do not render timeline if no file is loaded
+  }
+
+  const handlePlayheadDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    const timelineRect = e.currentTarget.parentElement?.getBoundingClientRect();
+    if (timelineRect) {
+      const newX = e.clientX - timelineRect.left;
+      const percentage = Math.max(0, Math.min(1, newX / timelineRect.width));
+      actions.seek(percentage * duration);
+    }
+  };
+
+  const handlePlayheadDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handlePlayheadDragEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="h-64 bg-card border-t border-border">
       {/* Timeline Controls */}
@@ -29,55 +56,60 @@ export function Timeline() {
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-1">
             <Scissors className="w-4 h-4 -rotate-90" />
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-1">
-            <Copy className="w-4 h-4" />
+        </div>
+
+        {/* Playback Controls */}
+        <div className="h-12 flex items-center justify-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground p-2"
+            onClick={() => isPlaying ? actions.pause() : actions.play()}
+          >
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </Button>
+
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-foreground text-sm font-mono">
+              {formatTime(currentTime)}
+            </span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-muted-foreground text-sm font-mono">
+              {formatTime(duration)}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <ZoomOut className="w-4 h-4 text-muted-foreground" />
-            <Slider 
-              defaultValue={[50]} 
-              max={100} 
-              step={1}
-              className="w-20"
-            />
-            <ZoomIn className="w-4 h-4 text-muted-foreground" />
-          </div>
-          
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-1">
             <Volume2 className="w-4 h-4" />
           </Button>
-        </div>
-      </div>
-
-      {/* Playback Controls */}
-      <div className="h-12 bg-card flex items-center justify-center gap-4 border-b border-border">
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-2">
-          <SkipBack className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-2">
-          <Play className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground p-2">
-          <SkipForward className="w-5 h-5" />
-        </Button>
-        
-        <div className="flex items-center gap-2 ml-4">
-          <span className="text-foreground text-sm font-mono">00:00</span>
-          <span className="text-muted-foreground">/</span>
-          <span className="text-muted-foreground text-sm font-mono">00:01</span>
+          <Slider 
+            value={[volume * 100]}
+            max={100}
+            step={1}
+            className="w-24"
+            onValueChange={([value]) => actions.setVolume(value / 100)}
+          />
         </div>
       </div>
 
       {/* Timeline Track */}
       <div className="flex-1 p-4">
-        <div className="relative">
+        <div
+          className="relative h-full"
+          onMouseMove={handlePlayheadDrag}
+          onMouseUp={handlePlayheadDragEnd}
+          onMouseLeave={handlePlayheadDragEnd}
+        >
           {/* Timeline ruler */}
           <div className="h-8 flex items-end border-b border-border mb-4">
-            {Array.from({ length: 30 }, (_, i) => (
-              <div key={i} className="flex-1 relative">
+            {Array.from({ length: Math.ceil(duration) + 1 }, (_, i) => (
+              <div
+                key={i}
+                className="relative"
+                style={{ flex: `0 0 ${100 / (Math.ceil(duration) + 1)}%` }}
+              >
                 <div className="absolute bottom-0 left-0 w-px h-2 bg-border"></div>
                 {i % 5 === 0 && (
                   <div className="absolute bottom-3 left-0 text-xs text-muted-foreground">
@@ -89,7 +121,11 @@ export function Timeline() {
           </div>
 
           {/* Playhead */}
-          <div className="absolute top-0 left-0 w-px h-full bg-primary z-10">
+          <div
+            className="absolute top-0 w-px h-full bg-primary z-10 cursor-col-resize"
+            style={{ left: `${(currentTime / duration) * 100}%` }}
+            onMouseDown={handlePlayheadDragStart}
+          >
             <div className="w-3 h-3 bg-primary rotate-45 transform -translate-x-1/2 -translate-y-1"></div>
           </div>
 
@@ -106,4 +142,11 @@ export function Timeline() {
       </div>
     </div>
   );
+}
+
+// Helper function to format time (MM:SS)
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }

@@ -33,3 +33,15 @@ Here are some additional guidelines to follow:
 - please do not delete any files or code to fix the errors. Instead ask the user when you are not sure about what to do.
 - Don't implement long files. Instead try to break down large code into separate components or files or modules
 </guidelines>
+
+
+Our updated tech stack -
+<tech_stack>
+- Next js app router 15.3.3
+- Shadcn
+- React
+- Remotion for video implementation
+- Remotion lambda for video rendering
+- Tailwind css for styling
+- Typescript
+</tech_stack>
