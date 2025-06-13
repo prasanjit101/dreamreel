@@ -27,15 +27,8 @@ export function TopBar() {
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm">
-          <Share className="w-4 h-4 mr-2" />
-          Share
-        </Button>
-        <Button variant="outline" size="sm">
           <Download className="w-4 h-4 mr-2" />
           Export
-        </Button>
-        <Button variant="secondary" size="sm">
-          Discard
         </Button>
         <ThemeToggle />
       </div>
