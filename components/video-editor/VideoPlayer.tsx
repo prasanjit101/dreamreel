@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react'; // Added useState
+import React, { useRef, useEffect, useState } from 'react';
 import { Player as RemotionPlayer, PlayerRef, CallbackListener } from '@remotion/player';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { VideoComposition } from './VideoComposition';
@@ -8,7 +8,8 @@ import { MediaUploader } from './MediaUploader';
 
 export default function VideoPlayer() {
   const playerRef = useRef<PlayerRef>(null);
-  const [isPlayerReady, setIsPlayerReady] = useState(false); // New state for player readiness
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(0);
 
   const { 
     isPlaying, 
@@ -23,52 +24,65 @@ export default function VideoPlayer() {
   // Callback ref to ensure playerRef is set and state is updated
   const setPlayerRef = (instance: PlayerRef | null) => {
     playerRef.current = instance;
-    setIsPlayerReady(!!instance); // Set true if instance is not null
+    setIsPlayerReady(!!instance);
   };
 
   // Calculate composition duration in frames (30 fps)
   const durationInFrames = Math.max(Math.floor(duration * 30), 30);
 
-  // Sync player with store state
+  // Sync player with store state - improved synchronization
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !isPlayerReady) return;
 
     if (isPlaying) {
       playerRef.current.play();
     } else {
       playerRef.current.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, isPlayerReady]);
 
+  // Improved seek synchronization
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !isPlayerReady) return;
     
     const targetFrame = Math.floor(currentTime * 30);
     const currentFrame = playerRef.current.getCurrentFrame();
     
-    // Only seek if there's a significant difference to avoid infinite loops
-    if (Math.abs(targetFrame - currentFrame) > 1) {
+    // Only seek if there's a significant difference and enough time has passed
+    const timeDiff = Math.abs(targetFrame - currentFrame);
+    const timeSinceLastSync = Date.now() - lastSyncTime;
+    
+    if (timeDiff > 2 && timeSinceLastSync > 100) {
       playerRef.current.seekTo(targetFrame);
+      setLastSyncTime(Date.now());
     }
-  }, [currentTime]);
+  }, [currentTime, isPlayerReady, lastSyncTime]);
 
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !isPlayerReady) return;
     
     playerRef.current.setVolume(volume);
-  }, [volume]);
+  }, [volume, isPlayerReady]);
 
-  // Handle player events - now dependent on isPlayerReady
+  // Handle player events with improved debouncing
   useEffect(() => {
     if (!isPlayerReady || !playerRef.current) {
       return;
     }
 
     const player = playerRef.current;
+    let timeUpdateTimeout: NodeJS.Timeout;
 
     const handleTimeUpdate: CallbackListener<'timeupdate'> = (e) => {
-      const newTime = e.detail.frame / 30;
-      actions.setCurrentTime(newTime);
+      // Debounce time updates to prevent excessive state updates
+      clearTimeout(timeUpdateTimeout);
+      timeUpdateTimeout = setTimeout(() => {
+        const newTime = e.detail.frame / 30;
+        // Only update if the difference is significant
+        if (Math.abs(newTime - currentTime) > 0.1) {
+          actions.setCurrentTime(newTime);
+        }
+      }, 50);
     };
 
     const handlePlay: CallbackListener<'play'> = () => {
@@ -83,19 +97,27 @@ export default function VideoPlayer() {
       actions.pause();
       actions.seek(0);
     };
+
+    const handleSeeked: CallbackListener<'seeked'> = (e) => {
+      const newTime = e.detail.frame / 30;
+      actions.setCurrentTime(newTime);
+    };
     
     player.addEventListener('timeupdate', handleTimeUpdate);
     player.addEventListener('play', handlePlay);
     player.addEventListener('pause', handlePause);
     player.addEventListener('ended', handleEnded);
+    player.addEventListener('seeked', handleSeeked);
     
     return () => {
+      clearTimeout(timeUpdateTimeout);
       player.removeEventListener('timeupdate', handleTimeUpdate);
       player.removeEventListener('play', handlePlay);
       player.removeEventListener('pause', handlePause);
       player.removeEventListener('ended', handleEnded);
+      player.removeEventListener('seeked', handleSeeked);
     };
-  }, [isPlayerReady, actions]); // Changed dependencies to isPlayerReady and actions
+  }, [isPlayerReady, actions, currentTime]);
 
   // Show upload interface if no media is loaded
   if (!isFileLoaded || timelineElements.length === 0) {
@@ -110,7 +132,7 @@ export default function VideoPlayer() {
     <div className="flex-1 bg-muted/30 flex items-center justify-center p-4">
       <div className="w-full h-full max-w-4xl max-h-[70vh] bg-black rounded-lg overflow-hidden shadow-lg">
         <RemotionPlayer
-          ref={setPlayerRef} // Use the callback ref here
+          ref={setPlayerRef}
           component={VideoComposition}
           durationInFrames={durationInFrames}
           compositionWidth={1920}
@@ -126,6 +148,8 @@ export default function VideoPlayer() {
           doubleClickToFullscreen={true}
           spaceKeyToPlayOrPause={false}
           loop={false}
+          allowFullscreen={true}
+          showVolumeControls={false}
         />
       </div>
     </div>

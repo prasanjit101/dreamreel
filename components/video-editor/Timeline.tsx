@@ -13,7 +13,8 @@ import {
   ZoomIn,
   ZoomOut,
   Trash2,
-  Copy
+  Copy,
+  Plus
 } from 'lucide-react';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { formatDuration } from '@/utils/mediaUtils';
@@ -46,6 +47,33 @@ export default function Timeline() {
   const pixelsPerSecond = 50 * zoom;
   const timelineWidth = Math.max(duration * pixelsPerSecond, 800);
   const trackHeight = 48;
+
+  // Group elements by track dynamically
+  const trackGroups = timelineElements.reduce((groups, element) => {
+    const trackNumber = element.track;
+    if (!groups[trackNumber]) {
+      groups[trackNumber] = [];
+    }
+    groups[trackNumber].push(element);
+    return groups;
+  }, {} as Record<number, typeof timelineElements>);
+
+  // Get all track numbers and sort them
+  const trackNumbers = Object.keys(trackGroups).map(Number).sort((a, b) => a - b);
+
+  // Ensure we have at least 3 tracks for video, audio, and text
+  const minTracks = Math.max(3, trackNumbers.length);
+  const allTrackNumbers = Array.from({ length: minTracks }, (_, i) => i);
+
+  // Track type mapping for labels
+  const getTrackLabel = (trackNumber: number) => {
+    switch (trackNumber) {
+      case 0: return 'Video';
+      case 1: return 'Audio';
+      case 2: return 'Text';
+      default: return `Track ${trackNumber + 1}`;
+    }
+  };
 
   const handlePlayheadClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!timelineRef.current || duration === 0) return;
@@ -128,12 +156,13 @@ export default function Timeline() {
     }
   };
 
-  const playheadPosition = duration > 0 ? (currentTime * pixelsPerSecond) : 0;
+  const handleAddTrack = () => {
+    // Add a new empty track by incrementing the highest track number
+    const maxTrack = Math.max(...trackNumbers, 2);
+    // Track will be created when an element is added to it
+  };
 
-  // Group elements by track - Fixed multi-track support
-  const videoElements = timelineElements.filter(el => el.type === 'video' || el.type === 'image');
-  const audioElements = timelineElements.filter(el => el.type === 'audio');
-  const textElements = timelineElements.filter(el => el.type === 'text');
+  const playheadPosition = duration > 0 ? (currentTime * pixelsPerSecond) : 0;
 
   return (
     <div className="h-80 bg-card border-t border-border flex flex-col">
@@ -206,6 +235,16 @@ export default function Timeline() {
             <ZoomIn className="w-4 h-4" />
           </Button>
 
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAddTrack}
+            className="text-muted-foreground hover:text-foreground p-2"
+            title="Add Track"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+
           {selectedElementId && (
             <>
               <Button
@@ -261,15 +300,13 @@ export default function Timeline() {
         {/* Track Labels */}
         <div className="w-20 bg-muted/50 border-r border-border flex flex-col">
           <div className="h-8 border-b border-border"></div>
-          <div className="h-12 border-b border-border flex items-center px-3">
-            <span className="text-muted-foreground text-xs font-medium">Video</span>
-          </div>
-          <div className="h-12 border-b border-border flex items-center px-3">
-            <span className="text-muted-foreground text-xs font-medium">Audio</span>
-          </div>
-          <div className="h-12 border-b border-border flex items-center px-3">
-            <span className="text-muted-foreground text-xs font-medium">Text</span>
-          </div>
+          {allTrackNumbers.map(trackNumber => (
+            <div key={trackNumber} className="h-12 border-b border-border flex items-center px-3">
+              <span className="text-muted-foreground text-xs font-medium">
+                {getTrackLabel(trackNumber)}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Timeline Content */}
@@ -310,55 +347,26 @@ export default function Timeline() {
               onMouseLeave={handleMouseUp}
             />
 
-            {/* Tracks */}
+            {/* Dynamic Tracks */}
             <div ref={tracksRef} className="relative">
-              {/* Video Track */}
-              <div className="h-12 bg-muted/20 border-b border-border relative">
-                {videoElements.map(element => (
-                  <TimelineClip
-                    key={element.id}
-                    element={element}
-                    duration={duration}
-                    trackHeight={trackHeight}
-                    pixelsPerSecond={pixelsPerSecond}
-                    trackIndex={0}
-                    onSelect={actions.setSelectedElement}
-                    isSelected={selectedElementId === element.id}
-                  />
-                ))}
-              </div>
-
-              {/* Audio Track */}
-              <div className="h-12 bg-muted/20 border-b border-border relative">
-                {audioElements.map(element => (
-                  <TimelineClip
-                    key={`${element.id}-audio`}
-                    element={element}
-                    duration={duration}
-                    trackHeight={trackHeight}
-                    pixelsPerSecond={pixelsPerSecond}
-                    trackIndex={1}
-                    onSelect={actions.setSelectedElement}
-                    isSelected={selectedElementId === element.id}
-                  />
-                ))}
-              </div>
-
-              {/* Text Track */}
-              <div className="h-12 bg-muted/20 border-b border-border relative">
-                {textElements.map(element => (
-                  <TimelineClip
-                    key={element.id}
-                    element={element}
-                    duration={duration}
-                    trackHeight={trackHeight}
-                    pixelsPerSecond={pixelsPerSecond}
-                    trackIndex={2}
-                    onSelect={actions.setSelectedElement}
-                    isSelected={selectedElementId === element.id}
-                  />
-                ))}
-              </div>
+              {allTrackNumbers.map(trackNumber => (
+                <div key={trackNumber} className="h-12 bg-muted/20 border-b border-border relative">
+                  {(trackGroups[trackNumber] || []).map(element => (
+                    <TimelineClip
+                      key={element.id}
+                      element={element}
+                      duration={duration}
+                      trackHeight={trackHeight}
+                      pixelsPerSecond={pixelsPerSecond}
+                      trackIndex={trackNumber}
+                      onSelect={actions.setSelectedElement}
+                      isSelected={selectedElementId === element.id}
+                      allElements={timelineElements}
+                      zoom={zoom}
+                    />
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
