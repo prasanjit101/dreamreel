@@ -6,7 +6,7 @@ import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { Type, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
-export function FilesPanel({ className }: { className?: string }) {
+export function Assetsbox({ className }: { className?: string }) {
 
   return (
     <ScrollArea className={cn("w-full h-full bg-card border-r border-border p-4", className)}>

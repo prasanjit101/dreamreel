@@ -2,7 +2,7 @@
 
 import { Navbar } from "@/components/video-editor/Navbar";
 import { Sidebar } from "@/components/video-editor/sidebar";
-import { FilesPanel } from "@/components/video-editor/files-panel";
+import { Assetsbox } from "@/components/video-editor/asset-box";
 import VideoPlayer from "@/components/video-editor/VideoPlayer";
 import { PropertiesPanel } from "@/components/video-editor/PropertiesPanel";
 import Timeline from "@/components/video-editor/Timeline";
@@ -23,7 +23,7 @@ export default function Home() {
         <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
           {/* Tool Properties Panel */}
           <div className="flex-1 overflow-auto">
-            <FilesPanel />
+            <Assetsbox />
           </div>
           {/* Properties Panel at the bottom */}
           <div className="flex-1 overflow-auto border-t border-border">
