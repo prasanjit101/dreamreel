@@ -59,7 +59,7 @@ export function TimelineScrubber({
       {/* Timeline Scrubber */}
       <div
         ref={timelineRef}
-        className="absolute top-0 left-0 w-full h-full cursor-pointer z-10"
+        className="absolute top-0 left-0 w-full h-[20px] cursor-pointer z-10"
         onClick={handlePlayheadClick}
         onMouseMove={handlePlayheadDrag}
         onMouseDown={handleMouseDown}

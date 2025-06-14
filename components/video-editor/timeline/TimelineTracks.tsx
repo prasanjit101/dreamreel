@@ -30,7 +30,7 @@ export function TimelineTracks({
   zoom,
 }: TimelineTracksProps) {
   return (
-    <div ref={tracksRef} className="relative">
+    <div ref={tracksRef} className="relative z-20">
       {allTrackNumbers.map(trackNumber => (
         <div key={trackNumber} className="h-12 bg-muted/20 border-b border-border relative">
           {(trackGroups[trackNumber] || []).map(element => (
