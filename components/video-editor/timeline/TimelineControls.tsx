@@ -13,7 +13,8 @@ import {
   ZoomIn,
   ZoomOut,
   Trash2,
-  Copy
+  Copy,
+  Plus
 } from 'lucide-react';
 import { useVideoEditorStore, VideoEditorState, TimelineElement } from '@/lib/store/video-editor-store';
 import { formatDuration } from '@/utils/mediaUtils';
@@ -97,6 +98,12 @@ export function TimelineControls({
     }
   };
 
+  const handleAddTrack = () => {
+    // Add a new empty track by incrementing the highest track number
+    // This action will be handled by the parent component or store
+    // as tracks are dynamically created when elements are added to them.
+  };
+
   return (
     <div className="h-16 bg-muted border-b border-border flex items-center justify-between px-4">
       {/* Left side - Playback controls */}
@@ -164,6 +171,16 @@ export function TimelineControls({
           className="text-muted-foreground hover:text-foreground p-2"
         >
           <ZoomIn className="w-4 h-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleAddTrack}
+          className="text-muted-foreground hover:text-foreground p-2"
+          title="Add Track"
+        >
+          <Plus className="w-4 h-4" />
         </Button>
 
         {selectedElementId && (

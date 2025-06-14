@@ -2,19 +2,22 @@
 
 import React from 'react';
 
-export function TrackLabels() {
+interface TrackLabelsProps {
+  allTrackNumbers: number[];
+  getTrackLabel: (trackNumber: number) => string;
+}
+
+export function TrackLabels({ allTrackNumbers, getTrackLabel }: TrackLabelsProps) {
   return (
     <div className="w-20 bg-muted/50 border-r border-border flex flex-col">
       <div className="h-8 border-b border-border"></div>
-      <div className="h-12 border-b border-border flex items-center px-3">
-        <span className="text-muted-foreground text-xs font-medium">Video</span>
-      </div>
-      <div className="h-12 border-b border-border flex items-center px-3">
-        <span className="text-muted-foreground text-xs font-medium">Audio</span>
-      </div>
-      <div className="h-12 border-b border-border flex items-center px-3">
-        <span className="text-muted-foreground text-xs font-medium">Text</span>
-      </div>
+      {allTrackNumbers.map(trackNumber => (
+        <div key={trackNumber} className="h-12 border-b border-border flex items-center px-3">
+          <span className="text-muted-foreground text-xs font-medium">
+            {getTrackLabel(trackNumber)}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

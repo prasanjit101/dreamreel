@@ -1,92 +1,54 @@
 "use client";
 
 import React from 'react';
-import { TimelineClip } from '../TimelineClip'; // Relative import for TimelineClip
-import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store'; // Import TimelineElement and VideoEditorState
+import { TimelineClip } from '../TimelineClip';
+import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store';
 
 interface TimelineTracksProps {
-  videoElements: TimelineElement[];
-  audioElements: TimelineElement[];
-  textElements: TimelineElement[];
+  allTrackNumbers: number[];
+  trackGroups: Record<number, TimelineElement[]>;
+  timelineElements: TimelineElement[];
   duration: number;
   trackHeight: number;
   pixelsPerSecond: number;
   selectedElementId: string | null;
   actions: VideoEditorState['actions'];
-  tracksRef: React.RefObject<HTMLDivElement>;
+  tracksRef: React.RefObject<HTMLDivElement | null>;
+  zoom: number;
 }
 
 export function TimelineTracks({
-  videoElements,
-  audioElements,
-  textElements,
+  allTrackNumbers,
+  trackGroups,
+  timelineElements,
   duration,
   trackHeight,
   pixelsPerSecond,
   selectedElementId,
   actions,
-  tracksRef
+  tracksRef,
+  zoom,
 }: TimelineTracksProps) {
-  // Combine all elements for the allElements prop
-  const allElements = [...videoElements, ...audioElements, ...textElements];
-  // Set a default zoom value (adjust as needed)
-  const zoom = 1;
-
   return (
     <div ref={tracksRef} className="relative">
-      {/* Video Track */}
-      <div className="h-12 bg-muted/20 border-b border-border relative">
-        {videoElements.map(element => (
-          <TimelineClip
-            key={element.id}
-            element={element}
-            duration={duration}
-            trackHeight={trackHeight}
-            pixelsPerSecond={pixelsPerSecond}
-            trackIndex={0}
-            onSelect={actions.setSelectedElement}
-            isSelected={selectedElementId === element.id}
-            allElements={allElements}
-            zoom={zoom}
-          />
-        ))}
-      </div>
-
-      {/* Audio Track */}
-      <div className="h-12 bg-muted/20 border-b border-border relative">
-        {audioElements.map(element => (
-          <TimelineClip
-            key={`${element.id}-audio`}
-            element={element}
-            duration={duration}
-            trackHeight={trackHeight}
-            pixelsPerSecond={pixelsPerSecond}
-            trackIndex={1}
-            onSelect={actions.setSelectedElement}
-            isSelected={selectedElementId === element.id}
-            allElements={allElements}
-            zoom={zoom}
-          />
-        ))}
-      </div>
-
-      {/* Text Track */}
-      <div className="h-12 bg-muted/20 border-b border-border relative">
-        {textElements.map(element => (
-          <TimelineClip
-            key={element.id}
-            element={element}
-            duration={duration}
-            trackHeight={trackHeight}
-            pixelsPerSecond={pixelsPerSecond}
-            trackIndex={2}
-            onSelect={actions.setSelectedElement}
-            isSelected={selectedElementId === element.id}
-            allElements={allElements}
-            zoom={zoom}
-          />
-        ))}
-      </div>
+      {allTrackNumbers.map(trackNumber => (
+        <div key={trackNumber} className="h-12 bg-muted/20 border-b border-border relative">
+          {(trackGroups[trackNumber] || []).map(element => (
+            <TimelineClip
+              key={element.id}
+              element={element}
+              duration={duration}
+              trackHeight={trackHeight}
+              pixelsPerSecond={pixelsPerSecond}
+              trackIndex={trackNumber}
+              onSelect={actions.setSelectedElement}
+              isSelected={selectedElementId === element.id}
+              allElements={timelineElements}
+              zoom={zoom}
+            />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
