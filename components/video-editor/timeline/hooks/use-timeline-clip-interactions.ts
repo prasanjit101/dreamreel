@@ -2,7 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useVideoEditorStore, TimelineElement } from '@/lib/store/video-editor-store';
-import { findNearestSnap, getSnapPoints } from '@/utils/timelineUtils';
+import { 
+  findNearestSnap, 
+  getSnapPoints, 
+  checkCollision, 
+  findValidPosition 
+} from '@/utils/timelineUtils';
 
 interface UseTimelineClipInteractionsProps {
   element: TimelineElement;
@@ -31,14 +36,17 @@ export const useTimelineClipInteractions = ({
   onSelect,
   clipRef,
 }: UseTimelineClipInteractionsProps): UseTimelineClipInteractionsReturn => {
-  const { actions } = useVideoEditorStore();
+  const { actions, snapToGrid, snapToElements } = useVideoEditorStore();
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, startTime: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, startTime: 0, duration: 0 });
-  const [snapIndicator, setSnapIndicator] = useState<{ position: number; visible: boolean }>({ position: 0, visible: false });
+  const [snapIndicator, setSnapIndicator] = useState<{ position: number; visible: boolean }>({ 
+    position: 0, 
+    visible: false 
+  });
 
-  // Handle mouse down for dragging and resizing
+  // Handle mouse down for dragging
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -49,7 +57,7 @@ export const useTimelineClipInteractions = ({
     if (!rect) return;
 
     const relativeX = e.clientX - rect.left;
-    const handleWidth = Math.max(8, 12 / (pixelsPerSecond / 100)); // Approximation for zoom, adjust as needed
+    const handleWidth = Math.max(8, 12);
 
     // Check if clicking on resize handles
     if (relativeX <= handleWidth) {
@@ -73,7 +81,7 @@ export const useTimelineClipInteractions = ({
         startTime: element.startTime
       });
     }
-  }, [element, onSelect, clipRef, pixelsPerSecond]);
+  }, [element, onSelect, clipRef]);
 
   const handleMouseDownLeftResize = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -97,10 +105,10 @@ export const useTimelineClipInteractions = ({
     });
   }, [element, onSelect]);
 
-  // Handle mouse move for dragging and resizing with snapping
+  // Enhanced mouse move handling with improved snapping and collision detection
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const snapPoints = getSnapPoints(duration, allElements, element.id);
+      const snapPoints = getSnapPoints(duration, allElements, element.id, snapToGrid, snapToElements);
       
       if (isDragging) {
         const deltaX = e.clientX - dragStart.x;
@@ -119,18 +127,19 @@ export const useTimelineClipInteractions = ({
         // Ensure clip doesn't go beyond timeline duration
         newStartTime = Math.min(newStartTime, duration - element.duration);
         
-        // Check for collisions with other clips on the same track
-        const wouldCollide = allElements.some(el => 
-          el.id !== element.id && 
-          el.track === element.track &&
-          newStartTime < el.startTime + el.duration &&
-          newStartTime + element.duration > el.startTime
-        );
-        
-        if (!wouldCollide) {
+        // Use enhanced collision detection
+        if (!checkCollision(element, newStartTime, element.duration, allElements)) {
           actions.updateTimelineElement(element.id, {
             startTime: newStartTime
           });
+        } else {
+          // Find the nearest valid position
+          const validPosition = findValidPosition(element, newStartTime, allElements, duration);
+          if (validPosition !== element.startTime) {
+            actions.updateTimelineElement(element.id, {
+              startTime: validPosition
+            });
+          }
         }
       } else if (isResizing) {
         const deltaX = e.clientX - resizeStart.x;
@@ -155,15 +164,8 @@ export const useTimelineClipInteractions = ({
           newStartTime = Math.max(0, newStartTime);
           newDuration = Math.max(0.1, newDuration);
           
-          // Check for collisions
-          const wouldCollide = allElements.some(el => 
-            el.id !== element.id && 
-            el.track === element.track &&
-            newStartTime < el.startTime + el.duration &&
-            newStartTime + newDuration > el.startTime
-          );
-          
-          if (!wouldCollide) {
+          // Enhanced collision check
+          if (!checkCollision(element, newStartTime, newDuration, allElements)) {
             actions.updateTimelineElement(element.id, {
               startTime: newStartTime,
               duration: newDuration
@@ -185,17 +187,9 @@ export const useTimelineClipInteractions = ({
           
           // Constraints
           newDuration = Math.max(0.1, newDuration);
-          newDuration = Math.min(newDuration, duration - element.startTime);
           
-          // Check for collisions
-          const wouldCollide = allElements.some(el => 
-            el.id !== element.id && 
-            el.track === element.track &&
-            element.startTime < el.startTime + el.duration &&
-            element.startTime + newDuration > el.startTime
-          );
-          
-          if (!wouldCollide) {
+          // Enhanced collision check
+          if (!checkCollision(element, element.startTime, newDuration, allElements)) {
             actions.updateTimelineElement(element.id, {
               duration: newDuration
             });
@@ -208,11 +202,21 @@ export const useTimelineClipInteractions = ({
       setIsDragging(false);
       setIsResizing(null);
       setSnapIndicator({ position: 0, visible: false });
+      
+      // Reset cursor
+      document.body.style.cursor = '';
     };
 
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
+      // Set appropriate cursor
+      if (isDragging) {
+        document.body.style.cursor = 'grabbing';
+      } else if (isResizing) {
+        document.body.style.cursor = 'ew-resize';
+      }
       
       // Prevent text selection during drag
       document.body.style.userSelect = 'none';
@@ -222,10 +226,23 @@ export const useTimelineClipInteractions = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
-  }, [isDragging, isResizing, dragStart, resizeStart, element, duration, pixelsPerSecond, actions, allElements]);
+  }, [
+    isDragging, 
+    isResizing, 
+    dragStart, 
+    resizeStart, 
+    element, 
+    duration, 
+    pixelsPerSecond, 
+    actions, 
+    allElements,
+    snapToGrid,
+    snapToElements
+  ]);
 
-  // Handle double-click to split clip
+  // Enhanced double-click to split clip
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -237,7 +254,8 @@ export const useTimelineClipInteractions = ({
     const relativeX = e.clientX - rect.left;
     const splitTime = (relativeX / clipWidth) * element.duration;
     
-    if (splitTime > 0.1 && splitTime < element.duration - 0.1) {
+    // Ensure minimum clip duration of 0.5 seconds
+    if (splitTime > 0.5 && splitTime < element.duration - 0.5) {
       // Create two new clips
       const firstClip = {
         ...element,
@@ -256,8 +274,11 @@ export const useTimelineClipInteractions = ({
       actions.removeTimelineElement(element.id);
       actions.addTimelineElement(firstClip);
       actions.addTimelineElement(secondClip);
+      
+      // Select the first clip
+      onSelect(firstClip.id);
     }
-  }, [element, pixelsPerSecond, actions, clipRef]);
+  }, [element, pixelsPerSecond, actions, clipRef, onSelect]);
 
   return {
     isDragging,

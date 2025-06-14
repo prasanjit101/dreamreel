@@ -2,47 +2,64 @@ import { TimelineElement } from '@/lib/store/video-editor-store';
 import { Volume2, VolumeX, Type, Image, Video, Music } from 'lucide-react';
 import * as React from 'react';
 
-// Snapping configuration
-const SNAP_THRESHOLD = 10; // pixels
-const SNAP_TO_GRID = true; // snap to second intervals
+// Enhanced snapping configuration
+const SNAP_THRESHOLD = 15; // pixels - increased for better UX
 const GRID_INTERVAL = 1; // seconds
 
 /**
- * Calculates snap points from other elements and a grid.
- * @param duration The total duration of the timeline.
- * @param allElements All timeline elements to consider for snapping.
- * @param currentElementId The ID of the current element being dragged/resized, to exclude it from snap points.
- * @returns An array of sorted snap points in seconds.
+ * Calculates comprehensive snap points from grid, other elements, and timeline markers.
  */
-export const getSnapPoints = (duration: number, allElements: TimelineElement[], currentElementId: string) => {
+export const getSnapPoints = (
+  duration: number, 
+  allElements: TimelineElement[], 
+  currentElementId: string,
+  snapToGrid: boolean = true,
+  snapToElements: boolean = true
+) => {
   const snapPoints: number[] = [];
   
   // Add grid snap points (every second)
-  if (SNAP_TO_GRID) {
+  if (snapToGrid) {
     for (let i = 0; i <= Math.ceil(duration); i += GRID_INTERVAL) {
+      snapPoints.push(i);
+    }
+    
+    // Add half-second grid points for finer control
+    for (let i = 0.5; i <= Math.ceil(duration); i += GRID_INTERVAL) {
       snapPoints.push(i);
     }
   }
   
-  // Add snap points from other elements (excluding current element)
-  allElements.forEach(el => {
-    if (el.id !== currentElementId) {
-      snapPoints.push(el.startTime); // Start of other clips
-      snapPoints.push(el.startTime + el.duration); // End of other clips
-    }
-  });
+  // Add snap points from other elements
+  if (snapToElements) {
+    allElements.forEach(el => {
+      if (el.id !== currentElementId) {
+        snapPoints.push(el.startTime); // Start of other clips
+        snapPoints.push(el.startTime + el.duration); // End of other clips
+        
+        // Add midpoint for additional snapping
+        snapPoints.push(el.startTime + el.duration / 2);
+      }
+    });
+  }
   
-  return snapPoints.sort((a, b) => a - b);
+  // Add timeline markers (0, duration)
+  snapPoints.push(0);
+  snapPoints.push(duration);
+  
+  // Remove duplicates and sort
+  return [...new Set(snapPoints)].sort((a, b) => a - b);
 };
 
 /**
- * Finds the nearest snap point for a given time.
- * @param time The current time in seconds.
- * @param snapPoints An array of available snap points.
- * @param pixelsPerSecond The number of pixels representing one second on the timeline.
- * @returns The nearest snap point if within the SNAP_THRESHOLD, otherwise null.
+ * Enhanced snap detection with visual feedback.
  */
-export const findNearestSnap = (time: number, snapPoints: number[], pixelsPerSecond: number) => {
+export const findNearestSnap = (
+  time: number, 
+  snapPoints: number[], 
+  pixelsPerSecond: number,
+  threshold: number = SNAP_THRESHOLD
+) => {
   let nearestSnap = null;
   let minDistance = Infinity;
   
@@ -50,7 +67,7 @@ export const findNearestSnap = (time: number, snapPoints: number[], pixelsPerSec
     const distance = Math.abs(time - snapPoint);
     const pixelDistance = distance * pixelsPerSecond;
     
-    if (pixelDistance <= SNAP_THRESHOLD && distance < minDistance) {
+    if (pixelDistance <= threshold && distance < minDistance) {
       minDistance = distance;
       nearestSnap = snapPoint;
     }
@@ -60,29 +77,101 @@ export const findNearestSnap = (time: number, snapPoints: number[], pixelsPerSec
 };
 
 /**
- * Returns the appropriate Tailwind CSS classes for a clip's background and border color based on its type.
- * @param elementType The type of the timeline element (e.g., 'video', 'audio', 'image', 'text').
- * @returns A string of Tailwind CSS classes.
+ * Checks for collisions between timeline elements on the same track.
+ */
+export const checkCollision = (
+  element: TimelineElement,
+  newStartTime: number,
+  newDuration: number,
+  allElements: TimelineElement[]
+): boolean => {
+  const newEndTime = newStartTime + newDuration;
+  
+  return allElements.some(el => 
+    el.id !== element.id && 
+    el.track === element.track &&
+    newStartTime < el.startTime + el.duration &&
+    newEndTime > el.startTime
+  );
+};
+
+/**
+ * Finds the nearest valid position without collisions.
+ */
+export const findValidPosition = (
+  element: TimelineElement,
+  targetStartTime: number,
+  allElements: TimelineElement[],
+  duration: number
+): number => {
+  const elementDuration = element.duration;
+  
+  // Try the target position first
+  if (!checkCollision(element, targetStartTime, elementDuration, allElements)) {
+    return Math.max(0, Math.min(targetStartTime, duration - elementDuration));
+  }
+  
+  // Find elements on the same track
+  const sameTrackElements = allElements
+    .filter(el => el.id !== element.id && el.track === element.track)
+    .sort((a, b) => a.startTime - b.startTime);
+  
+  // Try to place before the first element
+  if (sameTrackElements.length > 0 && targetStartTime < sameTrackElements[0].startTime) {
+    const maxStart = sameTrackElements[0].startTime - elementDuration;
+    if (maxStart >= 0) {
+      return maxStart;
+    }
+  }
+  
+  // Try to place between elements
+  for (let i = 0; i < sameTrackElements.length - 1; i++) {
+    const current = sameTrackElements[i];
+    const next = sameTrackElements[i + 1];
+    const gapStart = current.startTime + current.duration;
+    const gapEnd = next.startTime;
+    
+    if (gapEnd - gapStart >= elementDuration) {
+      if (targetStartTime >= gapStart && targetStartTime + elementDuration <= gapEnd) {
+        return targetStartTime;
+      }
+      return gapStart;
+    }
+  }
+  
+  // Try to place after the last element
+  if (sameTrackElements.length > 0) {
+    const lastElement = sameTrackElements[sameTrackElements.length - 1];
+    const afterLast = lastElement.startTime + lastElement.duration;
+    if (afterLast + elementDuration <= duration) {
+      return afterLast;
+    }
+  }
+  
+  // Fallback to original position if no valid position found
+  return element.startTime;
+};
+
+/**
+ * Enhanced clip color system with better contrast and visual hierarchy.
  */
 export const getClipColor = (elementType: TimelineElement['type']) => {
   switch (elementType) {
     case 'video':
-      return 'bg-blue-500/80 border-blue-400 hover:bg-blue-500/90';
+      return 'bg-blue-600/90 border-blue-400 hover:bg-blue-600 shadow-blue-500/20';
     case 'audio':
-      return 'bg-green-500/80 border-green-400 hover:bg-green-500/90';
+      return 'bg-green-600/90 border-green-400 hover:bg-green-600 shadow-green-500/20';
     case 'image':
-      return 'bg-purple-500/80 border-purple-400 hover:bg-purple-500/90';
+      return 'bg-purple-600/90 border-purple-400 hover:bg-purple-600 shadow-purple-500/20';
     case 'text':
-      return 'bg-orange-500/80 border-orange-400 hover:bg-orange-500/90';
+      return 'bg-orange-600/90 border-orange-400 hover:bg-orange-600 shadow-orange-500/20';
     default:
-      return 'bg-gray-500/80 border-gray-400 hover:bg-gray-500/90';
+      return 'bg-gray-600/90 border-gray-400 hover:bg-gray-600 shadow-gray-500/20';
   }
 };
 
 /**
  * Returns the appropriate Lucide React icon component for a clip's type.
- * @param elementType The type of the timeline element.
- * @returns A React icon component constructor.
  */
 export const getClipIcon = (elementType: TimelineElement['type']) => {
   switch (elementType) {
@@ -95,7 +184,46 @@ export const getClipIcon = (elementType: TimelineElement['type']) => {
     case 'text':
       return Type;
     default:
-      // Return a fallback icon for unknown types
       return Video;
   }
+};
+
+/**
+ * Gets the default track for a media type.
+ */
+export const getDefaultTrack = (mediaType: 'video' | 'audio' | 'image' | 'text'): number => {
+  switch (mediaType) {
+    case 'video':
+      return 0;
+    case 'audio':
+      return 1;
+    case 'text':
+      return 2;
+    case 'image':
+      return 3;
+    default:
+      return 0;
+  }
+};
+
+/**
+ * Gets a human-readable track label.
+ */
+export const getTrackLabel = (trackNumber: number): string => {
+  switch (trackNumber) {
+    case 0: return 'Video';
+    case 1: return 'Audio';
+    case 2: return 'Text';
+    case 3: return 'Image';
+    default: return `Track ${trackNumber + 1}`;
+  }
+};
+
+/**
+ * Calculates the optimal zoom level based on timeline content.
+ */
+export const calculateOptimalZoom = (duration: number, containerWidth: number): number => {
+  const targetPixelsPerSecond = containerWidth / duration;
+  const baseZoom = targetPixelsPerSecond / 50; // 50 is the base pixels per second
+  return Math.max(0.1, Math.min(5, baseZoom));
 };

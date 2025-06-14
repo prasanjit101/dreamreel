@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, Plus } from 'lucide-react';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { createMediaFile, isValidMediaFile } from '@/utils/mediaUtils';
+import { getDefaultTrack } from '@/utils/timelineUtils';
 import { toast } from 'sonner';
 
 interface MediaUploaderProps {
@@ -31,11 +32,9 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         const mediaFile = await createMediaFile(file);
         actions.addMediaFile(mediaFile);
         
-        // Determine track based on media type
-        let track = 0;
-        if (mediaFile.type === 'audio') track = 1;
-        else if (mediaFile.type === 'image') track = 3; // Image track
-        else if (mediaFile.type === 'video') track = 0; // Video track
+        // Get the appropriate track for this media type
+        const defaultTrack = getDefaultTrack(mediaFile.type);
+        const availableTrack = actions.getAvailableTrack(defaultTrack);
         
         // Auto-add to timeline
         const timelineElement = {
@@ -43,7 +42,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           type: mediaFile.type,
           startTime: 0,
           duration: mediaFile.duration || 5,
-          track,
+          track: availableTrack,
           mediaFile,
           properties: {
             volume: mediaFile.type === 'audio' || mediaFile.type === 'video' ? 1 : undefined
@@ -52,12 +51,18 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         
         actions.addTimelineElement(timelineElement);
         
-        // Set the composition duration to match the media duration
+        // Set the composition duration to accommodate the media
         if (mediaFile.duration) {
-          actions.setDuration(mediaFile.duration);
+          actions.setDuration(Math.max(mediaFile.duration + 10, 30));
         }
         
-        toast.success(`Added ${mediaFile.name} to ${track === 0 ? 'video' : track === 1 ? 'audio' : track === 3 ? 'image' : 'text'} track`);
+        const trackName = availableTrack === 0 ? 'video' : 
+                         availableTrack === 1 ? 'audio' : 
+                         availableTrack === 2 ? 'text' : 
+                         availableTrack === 3 ? 'image' : 
+                         `track ${availableTrack + 1}`;
+        
+        toast.success(`Added ${mediaFile.name} to ${trackName} track`);
       } catch (error) {
         console.error('Error loading media file:', error);
         toast.error(`Failed to load ${file.name}`);
@@ -125,7 +130,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           Supports video, audio, and image files
         </p>
         <p className="text-muted-foreground text-xs">
-          Videos → Video track | Audio → Audio track | Images → Image track
+          Files will be automatically placed on appropriate tracks
         </p>
       </div>
     </div>

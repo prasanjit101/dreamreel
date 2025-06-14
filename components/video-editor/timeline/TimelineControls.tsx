@@ -14,7 +14,9 @@ import {
   ZoomOut,
   Trash2,
   Copy,
-  Plus
+  Plus,
+  Grid3X3,
+  Magnet
 } from 'lucide-react';
 import { useVideoEditorStore, VideoEditorState, TimelineElement } from '@/lib/store/video-editor-store';
 import { formatDuration } from '@/utils/mediaUtils';
@@ -29,6 +31,8 @@ interface TimelineControlsProps {
   actions: VideoEditorState['actions'];
   zoom: number;
   setZoom: React.Dispatch<React.SetStateAction<number>>;
+  snapToGrid: boolean;
+  snapToElements: boolean;
 }
 
 export function TimelineControls({
@@ -40,7 +44,9 @@ export function TimelineControls({
   timelineElements,
   actions,
   zoom,
-  setZoom
+  setZoom,
+  snapToGrid,
+  snapToElements
 }: TimelineControlsProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(volume);
@@ -99,9 +105,10 @@ export function TimelineControls({
   };
 
   const handleAddTrack = () => {
-    // Add a new empty track by incrementing the highest track number
-    // This action will be handled by the parent component or store
-    // as tracks are dynamically created when elements are added to them.
+    // Expand the number of available tracks
+    actions.setMaxTracks(timelineElements.length > 0 ? 
+      Math.max(...timelineElements.map(el => el.track)) + 2 : 8
+    );
   };
 
   return (
@@ -151,6 +158,28 @@ export function TimelineControls({
 
       {/* Center - Timeline tools */}
       <div className="flex items-center gap-2">
+        {/* Snap controls */}
+        <Button
+          variant={snapToGrid ? "default" : "ghost"}
+          size="sm"
+          onClick={() => actions.setSnapToGrid(!snapToGrid)}
+          className="p-2"
+          title="Snap to Grid"
+        >
+          <Grid3X3 className="w-4 h-4" />
+        </Button>
+        
+        <Button
+          variant={snapToElements ? "default" : "ghost"}
+          size="sm"
+          onClick={() => actions.setSnapToElements(!snapToElements)}
+          className="p-2"
+          title="Snap to Elements"
+        >
+          <Magnet className="w-4 h-4" />
+        </Button>
+
+        {/* Zoom controls */}
         <Button
           variant="ghost"
           size="sm"
@@ -190,6 +219,7 @@ export function TimelineControls({
               size="sm"
               onClick={handleCopySelected}
               className="text-muted-foreground hover:text-foreground p-2"
+              title="Duplicate Selected"
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -199,6 +229,7 @@ export function TimelineControls({
               size="sm"
               onClick={handleDeleteSelected}
               className="text-muted-foreground hover:text-red-500 p-2"
+              title="Delete Selected"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
