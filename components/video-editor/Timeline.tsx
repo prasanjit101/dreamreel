@@ -61,8 +61,8 @@ export default function Timeline() {
   // Get all track numbers and sort them
   const trackNumbers = Object.keys(trackGroups).map(Number).sort((a, b) => a - b);
 
-  // Ensure we have at least 3 tracks for video, audio, and text
-  const minTracks = Math.max(3, trackNumbers.length);
+  // Ensure we have at least 4 tracks for video, audio, text, and image
+  const minTracks = Math.max(4, trackNumbers.length);
   const allTrackNumbers = Array.from({ length: minTracks }, (_, i) => i);
 
   // Track type mapping for labels
@@ -71,6 +71,7 @@ export default function Timeline() {
       case 0: return 'Video';
       case 1: return 'Audio';
       case 2: return 'Text';
+      case 3: return 'Image';
       default: return `Track ${trackNumber + 1}`;
     }
   };
@@ -158,7 +159,7 @@ export default function Timeline() {
 
   const handleAddTrack = () => {
     // Add a new empty track by incrementing the highest track number
-    const maxTrack = Math.max(...trackNumbers, 2);
+    const maxTrack = Math.max(...trackNumbers, 3);
     // Track will be created when an element is added to it
   };
 

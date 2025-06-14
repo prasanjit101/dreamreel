@@ -31,13 +31,19 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         const mediaFile = await createMediaFile(file);
         actions.addMediaFile(mediaFile);
         
-        // Auto-add to timeline if it's the first media file
+        // Determine track based on media type
+        let track = 0;
+        if (mediaFile.type === 'audio') track = 1;
+        else if (mediaFile.type === 'image') track = 3; // Image track
+        else if (mediaFile.type === 'video') track = 0; // Video track
+        
+        // Auto-add to timeline
         const timelineElement = {
           id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           type: mediaFile.type,
           startTime: 0,
           duration: mediaFile.duration || 5,
-          track: mediaFile.type === 'video' ? 0 : 1,
+          track,
           mediaFile,
           properties: {
             volume: mediaFile.type === 'audio' || mediaFile.type === 'video' ? 1 : undefined
@@ -51,7 +57,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           actions.setDuration(mediaFile.duration);
         }
         
-        toast.success(`Added ${mediaFile.name} to timeline`);
+        toast.success(`Added ${mediaFile.name} to ${track === 0 ? 'video' : track === 1 ? 'audio' : track === 3 ? 'image' : 'text'} track`);
       } catch (error) {
         console.error('Error loading media file:', error);
         toast.error(`Failed to load ${file.name}`);
@@ -117,6 +123,9 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         <h3 className="text-foreground font-medium">Click to upload media files</h3>
         <p className="text-muted-foreground text-sm">
           Supports video, audio, and image files
+        </p>
+        <p className="text-muted-foreground text-xs">
+          Videos → Video track | Audio → Audio track | Images → Image track
         </p>
       </div>
     </div>
