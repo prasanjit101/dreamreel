@@ -10,16 +10,15 @@ import {
   Layers, 
   Upload,
   Menu,
+  Files,
   Undo2,
-  Redo2
+  Redo2,
 } from "lucide-react";
 
 export function Sidebar() {
   const tools = [
-    { icon: Video, label: "Video", active: false },
-    { icon: Image, label: "Image", active: false },
-    { icon: Type, label: "Text", active: true },
-      { icon: Music, label: "Audio", active: false },
+    { icon: Files, label: "Files", active: true },
+    { icon: Layers, label: "Tracks", active: false },
   ];
 
   return (
