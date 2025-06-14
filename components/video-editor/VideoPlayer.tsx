@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react'; // Added useState
 import { Player as RemotionPlayer, PlayerRef, CallbackListener } from '@remotion/player';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { VideoComposition } from './VideoComposition';
@@ -8,6 +8,8 @@ import { MediaUploader } from './MediaUploader';
 
 export default function VideoPlayer() {
   const playerRef = useRef<PlayerRef>(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false); // New state for player readiness
+
   const { 
     isPlaying, 
     currentTime, 
@@ -17,6 +19,12 @@ export default function VideoPlayer() {
     timelineElements,
     actions 
   } = useVideoEditorStore();
+
+  // Callback ref to ensure playerRef is set and state is updated
+  const setPlayerRef = (instance: PlayerRef | null) => {
+    playerRef.current = instance;
+    setIsPlayerReady(!!instance); // Set true if instance is not null
+  };
 
   // Calculate composition duration in frames (30 fps)
   const durationInFrames = Math.max(Math.floor(duration * 30), 30);
@@ -50,32 +58,31 @@ export default function VideoPlayer() {
     playerRef.current.setVolume(volume);
   }, [volume]);
 
-  // Handle time updates from the player
-  const handleTimeUpdate = useCallback<CallbackListener<'timeupdate'>>((e) => {
-    const newTime = e.detail.frame / 30;
-    // Use setCurrentTime instead of seek to avoid triggering the seek effect
-    actions.setCurrentTime(newTime);
-  }, [actions]);
-
-  // Handle play/pause events
-  const handlePlay = useCallback<CallbackListener<'play'>>(() => {
-    actions.play();
-  }, [actions]);
-
-  const handlePause = useCallback<CallbackListener<'pause'>>(() => {
-    actions.pause();
-  }, [actions]);
-
-  const handleEnded = useCallback<CallbackListener<'ended'>>(() => {
-    actions.pause();
-    actions.seek(0);
-  }, [actions]);
-
-  // Handle player events
+  // Handle player events - now dependent on isPlayerReady
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!isPlayerReady || !playerRef.current) {
+      return;
+    }
 
     const player = playerRef.current;
+
+    const handleTimeUpdate: CallbackListener<'timeupdate'> = (e) => {
+      const newTime = e.detail.frame / 30;
+      actions.setCurrentTime(newTime);
+    };
+
+    const handlePlay: CallbackListener<'play'> = () => {
+      actions.play();
+    };
+
+    const handlePause: CallbackListener<'pause'> = () => {
+      actions.pause();
+    };
+
+    const handleEnded: CallbackListener<'ended'> = () => {
+      actions.pause();
+      actions.seek(0);
+    };
     
     player.addEventListener('timeupdate', handleTimeUpdate);
     player.addEventListener('play', handlePlay);
@@ -88,7 +95,7 @@ export default function VideoPlayer() {
       player.removeEventListener('pause', handlePause);
       player.removeEventListener('ended', handleEnded);
     };
-  }, [handleTimeUpdate, handlePlay, handlePause, handleEnded]);
+  }, [isPlayerReady, actions]); // Changed dependencies to isPlayerReady and actions
 
   // Show upload interface if no media is loaded
   if (!isFileLoaded || timelineElements.length === 0) {
@@ -103,7 +110,7 @@ export default function VideoPlayer() {
     <div className="flex-1 bg-muted/30 flex items-center justify-center p-4">
       <div className="w-full h-full max-w-4xl max-h-[70vh] bg-black rounded-lg overflow-hidden shadow-lg">
         <RemotionPlayer
-          ref={playerRef}
+          ref={setPlayerRef} // Use the callback ref here
           component={VideoComposition}
           durationInFrames={durationInFrames}
           compositionWidth={1920}
