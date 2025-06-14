@@ -114,7 +114,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
       <Button
         variant="ghost"
         size="icon"
-        className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary transition-colors"
+        className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary transition-colors cursor-pointer"
         onClick={handleButtonClick}
       >
         <Plus className="w-8 h-8" />

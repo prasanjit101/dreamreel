@@ -10,8 +10,9 @@ import { Textarea } from "../ui/textarea";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { formatDuration, formatFileSize } from '@/utils/mediaUtils';
 import { Trash2, Copy, Volume2, Type, Palette } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function PropertiesPanel() {
+export function PropertiesPanel({ className }: { className?: string }) {
   const { timelineElements, selectedElementId, actions } = useVideoEditorStore();
   
   const selectedElement = timelineElements.find(el => el.id === selectedElementId);
@@ -64,8 +65,8 @@ export function PropertiesPanel() {
   }
 
   return (
-    <ScrollArea className="w-full bg-card border-t border-border p-4 max-h-48">
-      <div className="space-y-4">
+    <ScrollArea className={cn("w-full bg-card border-t border-border max-h-48", className)}>
+      <div className="space-y-4  p-4">
         {/* Header with element info */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -73,7 +74,7 @@ export function PropertiesPanel() {
             {selectedElement.type === 'audio' && <div className="w-3 h-3 bg-green-500 rounded"></div>}
             {selectedElement.type === 'image' && <div className="w-3 h-3 bg-purple-500 rounded"></div>}
             {selectedElement.type === 'text' && <div className="w-3 h-3 bg-orange-500 rounded"></div>}
-            <h3 className="text-foreground font-medium capitalize">
+            <h3 className="text-foreground font-medium text-sm capitalize">
               {selectedElement.type} Properties
             </h3>
           </div>

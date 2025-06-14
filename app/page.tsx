@@ -19,11 +19,13 @@ export default function Home() {
         {/* Left Sidebar with Tools */}
         <Sidebar />
 
-        <div className="h-full flex flex-col border-r border-border relative w-70">
+        <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
           {/* Tool Properties Panel */}
-          <FilesPanel />
+          <div className="flex-1 overflow-auto">
+            <FilesPanel />
+          </div>
           {/* Properties Panel at the bottom */}
-          <div className="absolute bottom-0 w-full p-4 left-0">
+          <div className="flex-1 overflow-auto border-t border-border">
             <PropertiesPanel />
           </div>
         </div>
