@@ -120,7 +120,7 @@ export default function VideoPlayer() {
   }, [isPlayerReady, actions, currentTime]);
 
   // Show upload interface if no media is loaded
-  if (!isFileLoaded || timelineElements.length === 0) {
+  if (!isFileLoaded) {
     return (
       <div className="flex-1 bg-muted/30 flex items-center justify-center">
         <MediaUploader />
@@ -128,29 +128,42 @@ export default function VideoPlayer() {
     );
   }
 
+  // Show player interface even if no timeline elements exist
+  // This allows users to see the player area after importing files
   return (
     <div className="flex-1 bg-muted/30 flex items-center justify-center p-4">
       <div className="w-full h-full max-w-4xl max-h-[70vh] bg-black rounded-lg overflow-hidden shadow-lg">
-        <RemotionPlayer
-          ref={setPlayerRef}
-          component={VideoComposition}
-          durationInFrames={durationInFrames}
-          compositionWidth={1920}
-          compositionHeight={1080}
-          fps={30}
-          style={{ 
-            width: '100%', 
-            height: '100%',
-            borderRadius: '8px'
-          }}
-          controls={false}
-          clickToPlay={false}
-          doubleClickToFullscreen={true}
-          spaceKeyToPlayOrPause={false}
-          loop={false}
-          allowFullscreen={true}
-          showVolumeControls={false}
-        />
+        {timelineElements.length > 0 ? (
+          <RemotionPlayer
+            ref={setPlayerRef}
+            component={VideoComposition}
+            durationInFrames={durationInFrames}
+            compositionWidth={1920}
+            compositionHeight={1080}
+            fps={30}
+            style={{ 
+              width: '100%', 
+              height: '100%',
+              borderRadius: '8px'
+            }}
+            controls={false}
+            clickToPlay={false}
+            doubleClickToFullscreen={true}
+            spaceKeyToPlayOrPause={false}
+            loop={false}
+            allowFullscreen={true}
+            showVolumeControls={false}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white">
+            <div className="text-center space-y-4">
+              <div className="text-lg font-medium">Player Ready</div>
+              <div className="text-sm text-white/70">
+                Add media files to the timeline to start editing
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

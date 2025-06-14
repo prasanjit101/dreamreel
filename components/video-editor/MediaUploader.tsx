@@ -14,10 +14,12 @@ interface MediaUploaderProps {
 
 export function MediaUploader({ variant = 'dropzone', className }: MediaUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { actions } = useVideoEditorStore();
+  const { mediaFiles, actions } = useVideoEditorStore();
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+
+    const isProjectEmpty = mediaFiles.length === 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -31,33 +33,35 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         const mediaFile = await createMediaFile(file);
         actions.addMediaFile(mediaFile);
         
-        // Determine track based on media type
-        let track = 0;
-        if (mediaFile.type === 'audio') track = 1;
-        else if (mediaFile.type === 'image') track = 3; // Image track
-        else if (mediaFile.type === 'video') track = 0; // Video track
+        // Only auto-add to timeline if this is the first file AND it's a video
+        const shouldAutoAddToTimeline = isProjectEmpty && i === 0 && mediaFile.type === 'video';
         
-        // Auto-add to timeline
-        const timelineElement = {
-          id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          type: mediaFile.type,
-          startTime: 0,
-          duration: mediaFile.duration || 5,
-          track,
-          mediaFile,
-          properties: {
-            volume: mediaFile.type === 'audio' || mediaFile.type === 'video' ? 1 : undefined
+        if (shouldAutoAddToTimeline) {
+          // Auto-add first video to timeline
+          const timelineElement = {
+            id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: mediaFile.type,
+            startTime: 0,
+            duration: mediaFile.duration || 5,
+            track: 0, // Video track
+            mediaFile,
+            properties: {
+              volume: 1
+            }
+          };
+          
+          actions.addTimelineElement(timelineElement);
+          
+          // Set the composition duration to match the media duration
+          if (mediaFile.duration) {
+            actions.setDuration(mediaFile.duration);
           }
-        };
-        
-        actions.addTimelineElement(timelineElement);
-        
-        // Set the composition duration to match the media duration
-        if (mediaFile.duration) {
-          actions.setDuration(mediaFile.duration);
+          
+          toast.success(`${mediaFile.name} added to timeline`);
+        } else {
+          // Just add to media library
+          toast.success(`${mediaFile.name} imported to media library`);
         }
-        
-        toast.success(`Added ${mediaFile.name} to ${track === 0 ? 'video' : track === 1 ? 'audio' : track === 3 ? 'image' : 'text'} track`);
       } catch (error) {
         console.error('Error loading media file:', error);
         toast.error(`Failed to load ${file.name}`);
