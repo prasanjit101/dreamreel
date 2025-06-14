@@ -51,7 +51,7 @@ export function PropertiesPanel({ className }: { className?: string }) {
 
   if (!selectedElement) {
     return (
-      <ScrollArea className="w-full bg-card border-t border-border p-4 max-h-48">
+      <ScrollArea className="w-full bg-card border-t border-border p-4 h-full">
         <div className="text-center space-y-4">
           <div className="space-y-2">
             <h3 className="text-foreground font-medium">No item selected</h3>
@@ -65,7 +65,7 @@ export function PropertiesPanel({ className }: { className?: string }) {
   }
 
   return (
-    <ScrollArea className={cn("w-full bg-card border-t border-border max-h-48", className)}>
+    <ScrollArea className={cn("w-full bg-card border-t border-border h-full", className)}>
       <div className="space-y-4  p-4">
         {/* Header with element info */}
         <div className="flex items-center justify-between">

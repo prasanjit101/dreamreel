@@ -7,6 +7,7 @@ import VideoPlayer from "@/components/video-editor/VideoPlayer";
 import { PropertiesPanel } from "@/components/video-editor/PropertiesPanel";
 import Timeline from "@/components/video-editor/Timeline";
 import { Toaster } from "sonner";
+import AgentPanel from "@/components/video-editor/AgentPanel";
 
 export default function Home() {
   return (
@@ -30,10 +31,15 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col max-w-4xl">
           {/* Main Player Area */}
           <VideoPlayer />
           <Timeline />
+        </div>
+
+        {/* Right Sidebar with Properties */}
+        <div className="w-65 border-l border-border flex flex-col">
+          <AgentPanel />
         </div>
       </div>
 
