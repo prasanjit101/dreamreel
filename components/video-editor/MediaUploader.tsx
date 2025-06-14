@@ -124,9 +124,6 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         <p className="text-muted-foreground text-sm">
           Supports video, audio, and image files
         </p>
-        <p className="text-muted-foreground text-xs">
-          Videos → Video track | Audio → Audio track | Images → Image track
-        </p>
       </div>
     </div>
   );

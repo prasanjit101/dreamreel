@@ -16,7 +16,25 @@ import {
   Copy,
   Plus
 } from 'lucide-react';
-import { useVideoEditorStore, VideoEditorState, TimelineElement } from '@/lib/store/video-editor-store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { AudioConfigForm } from '@/components/video-editor/track-config-forms/AudioConfigForm';
+import { VideoConfigForm } from '@/components/video-editor/track-config-forms/VideoConfigForm';
+import { ImageConfigForm } from '@/components/video-editor/track-config-forms/ImageConfigForm';
+import { TextConfigForm } from '@/components/video-editor/track-config-forms/TextConfigForm';
+import { VideoEditorState, TimelineElement, MediaFile } from '@/lib/store/video-editor-store';
 import { formatDuration } from '@/utils/mediaUtils';
 
 interface TimelineControlsProps {
@@ -44,6 +62,11 @@ export function TimelineControls({
 }: TimelineControlsProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(volume);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedTrackType, setSelectedTrackType] = useState<'audio' | 'video' | 'image' | 'text' | null>(null);
+  const [currentConfig, setCurrentConfig] = useState<any>({});
+  const [currentFile, setCurrentFile] = useState<File | undefined>(undefined);
 
   const handleVolumeToggle = () => {
     if (isMuted) {
@@ -90,7 +113,7 @@ export function TimelineControls({
       if (element) {
         const newElement = {
           ...element,
-          id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `element_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
           startTime: element.startTime + element.duration
         };
         actions.addTimelineElement(newElement);
@@ -98,10 +121,52 @@ export function TimelineControls({
     }
   };
 
-  const handleAddTrack = () => {
-    // Add a new empty track by incrementing the highest track number
-    // This action will be handled by the parent component or store
-    // as tracks are dynamically created when elements are added to them.
+  const handleConfigChange = (config: any) => {
+    setCurrentConfig(config);
+    if (config.file) {
+      setCurrentFile(config.file);
+    } else {
+      setCurrentFile(undefined);
+    }
+  };
+
+  const handleTrackSelect = (type: 'audio' | 'video' | 'image' | 'text') => {
+    setSelectedTrackType(type);
+    setCurrentConfig({}); // Reset config when selecting new type
+    setCurrentFile(undefined); // Reset file
+    setDialogOpen(true);
+  };
+
+  const handleAddTrack = async () => {
+    if (!selectedTrackType) return;
+
+    let mediaFile: MediaFile | undefined = undefined;
+    if (currentFile) {
+      // Create a URL for the file
+      const fileUrl = URL.createObjectURL(currentFile);
+      mediaFile = {
+        id: `media_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        name: currentFile.name,
+        type: selectedTrackType === 'audio' ? 'audio' : selectedTrackType === 'video' ? 'video' : 'image',
+        url: fileUrl,
+        file: currentFile,
+        duration: 1, // Will be updated once media is loaded
+      };
+      actions.addMediaFile(mediaFile);
+    }
+
+    const newElement: TimelineElement = {
+      id: `element_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+      type: selectedTrackType,
+      startTime: 0, // Default start time
+      duration: currentConfig.displayDuration || 5, // Default duration for images/text, will be updated for media
+      track: -1, // Will be assigned by store
+      mediaFile: mediaFile,
+      properties: { ...currentConfig },
+    };
+
+    actions.addTimelineElement(newElement);
+    setDialogOpen(false);
   };
 
   return (
@@ -112,34 +177,16 @@ export function TimelineControls({
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleSkipBack}
-            className="text-muted-foreground hover:text-foreground p-2"
-          >
-            <SkipBack className="w-4 h-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
             onClick={() => isPlaying ? actions.pause() : actions.play()}
             className="text-foreground hover:text-foreground p-2 bg-primary/10 hover:bg-primary/20"
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSkipForward}
-            className="text-muted-foreground hover:text-foreground p-2"
-          >
-            <SkipForward className="w-4 h-4" />
-          </Button>
         </div>
 
         {/* Time display */}
-        <div className="flex items-center gap-2 ml-4">
-          <span className="text-foreground text-sm font-mono min-w-[60px]">
+        <div className="flex items-center gap-1 ml-4">
+          <span className="text-foreground text-sm font-mono">
             {formatDuration(currentTime)}
           </span>
           <span className="text-muted-foreground">/</span>
@@ -173,15 +220,24 @@ export function TimelineControls({
           <ZoomIn className="w-4 h-4" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleAddTrack}
-          className="text-muted-foreground hover:text-foreground p-2"
-          title="Add Track"
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground p-2"
+              title="Add Track"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleTrackSelect('audio')}>Audio</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTrackSelect('video')}>Video</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTrackSelect('image')}>Image</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTrackSelect('text')}>Text</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {selectedElementId && (
           <>
@@ -231,6 +287,25 @@ export function TimelineControls({
           {Math.round((isMuted ? 0 : volume) * 100)}%
         </span>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add {selectedTrackType} Track</DialogTitle>
+            <DialogDescription>
+              Configure your {selectedTrackType} track settings
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTrackType === 'audio' && <AudioConfigForm onConfigChange={handleConfigChange} initialConfig={currentConfig} />}
+          {selectedTrackType === 'video' && <VideoConfigForm onConfigChange={handleConfigChange} initialConfig={currentConfig} />}
+          {selectedTrackType === 'image' && <ImageConfigForm onConfigChange={handleConfigChange} initialConfig={currentConfig} />}
+          {selectedTrackType === 'text' && <TextConfigForm onConfigChange={handleConfigChange} initialConfig={currentConfig} />}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddTrack}>Add Track</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

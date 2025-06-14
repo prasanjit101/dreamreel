@@ -17,12 +17,23 @@ export interface TimelineElement {
   track: number;
   mediaFile?: MediaFile;
   properties?: {
-    volume?: number;
+    // Common properties
+    volume?: number; // For audio/video
+    x?: number; // For image/text/video position
+    y?: number; // For image/text/video position
+    
+    // Text specific
     text?: string;
     fontSize?: number;
+    fontFamily?: string;
     color?: string;
-    x?: number;
-    y?: number;
+
+    // Video specific
+    resolution?: string;
+    playbackSpeed?: number;
+
+    // Image specific
+    displayDuration?: number; // For images
   };
 }
 
@@ -116,7 +127,25 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
     // Timeline management
     addTimelineElement: (element: TimelineElement) => {
       set(state => {
-        const newElements = [...state.timelineElements, element];
+        // Determine the highest existing track number
+        const maxTrack = state.timelineElements.reduce((max, el) => Math.max(max, el.track), -1);
+        const newTrackNumber = maxTrack + 1;
+
+        // Assign a track number if not already provided
+        const elementWithTrack = {
+          ...element,
+          track: element.track !== undefined ? element.track : newTrackNumber,
+          // Set default properties based on type if not provided
+          properties: {
+            ...element.properties,
+            ...(element.type === 'audio' && { volume: element.properties?.volume ?? 1 }),
+            ...(element.type === 'video' && { volume: element.properties?.volume ?? 1, resolution: element.properties?.resolution ?? '1080p', playbackSpeed: element.properties?.playbackSpeed ?? 1 }),
+            ...(element.type === 'image' && { displayDuration: element.properties?.displayDuration ?? 5 }),
+            ...(element.type === 'text' && { text: element.properties?.text ?? 'New Text', fontSize: element.properties?.fontSize ?? 24, fontFamily: element.properties?.fontFamily ?? 'Arial', color: element.properties?.color ?? '#ffffff' }),
+          }
+        };
+
+        const newElements = [...state.timelineElements, elementWithTrack];
         const maxEndTime = Math.max(...newElements.map(el => el.startTime + el.duration));
         return {
           timelineElements: newElements,
