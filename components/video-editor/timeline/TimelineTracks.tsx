@@ -27,6 +27,11 @@ export function TimelineTracks({
   actions,
   tracksRef
 }: TimelineTracksProps) {
+  // Combine all elements for the allElements prop
+  const allElements = [...videoElements, ...audioElements, ...textElements];
+  // Set a default zoom value (adjust as needed)
+  const zoom = 1;
+
   return (
     <div ref={tracksRef} className="relative">
       {/* Video Track */}
@@ -41,6 +46,8 @@ export function TimelineTracks({
             trackIndex={0}
             onSelect={actions.setSelectedElement}
             isSelected={selectedElementId === element.id}
+            allElements={allElements}
+            zoom={zoom}
           />
         ))}
       </div>
@@ -57,6 +64,8 @@ export function TimelineTracks({
             trackIndex={1}
             onSelect={actions.setSelectedElement}
             isSelected={selectedElementId === element.id}
+            allElements={allElements}
+            zoom={zoom}
           />
         ))}
       </div>
@@ -73,6 +82,8 @@ export function TimelineTracks({
             trackIndex={2}
             onSelect={actions.setSelectedElement}
             isSelected={selectedElementId === element.id}
+            allElements={allElements}
+            zoom={zoom}
           />
         ))}
       </div>
