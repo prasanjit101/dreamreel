@@ -3,38 +3,43 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { 
-  Video, 
-  Image, 
-  Type, 
-  Music, 
-  Layers, 
-  Upload,
-  Menu,
   Files,
-  Undo2,
-  Redo2,
+  Layers,
 } from "lucide-react";
+import { useVideoEditorStore, SidebarTab } from '@/lib/store/video-editor-store';
+
+interface SidebarTool {
+  id: SidebarTab;
+  icon: typeof Files;
+  label: string;
+}
 
 export function Sidebar() {
-  const tools = [
-    { icon: Files, label: "Files", active: true },
-    { icon: Layers, label: "Tracks", active: false },
+  const { activeSidebarTab, actions } = useVideoEditorStore();
+
+  const tools: SidebarTool[] = [
+    { id: 'files', icon: Files, label: "Files" },
+    { id: 'tracks', icon: Layers, label: "Tracks" },
   ];
 
-  return (
-      <div className="w-16 bg-sidebar border-r border-sidebar-border flex flex-col">
+  const handleToolClick = (toolId: SidebarTab) => {
+    actions.setActiveSidebarTab(toolId);
+  };
 
+  return (
+    <div className="w-16 bg-sidebar border-r border-sidebar-border flex flex-col">
       <Separator className="bg-sidebar-border" />
 
       {/* Tools */}
       <div className="flex-1 p-3 space-y-2">
         {tools.map((tool) => (
           <Button
-            key={tool.label}
+            key={tool.id}
             variant="ghost"
             size="sm"
+            onClick={() => handleToolClick(tool.id)}
             className={`w-full p-2 h-auto flex flex-col gap-1 ${
-              tool.active 
+              activeSidebarTab === tool.id
                 ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90" 
                 : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
             }`}

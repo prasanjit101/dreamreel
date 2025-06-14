@@ -37,6 +37,8 @@ export interface TimelineElement {
   };
 }
 
+export type SidebarTab = 'files' | 'tracks';
+
 export interface VideoEditorState {
   // Playback state
   isPlaying: boolean;
@@ -51,6 +53,7 @@ export interface VideoEditorState {
   
   // UI state
   isFileLoaded: boolean;
+  activeSidebarTab: SidebarTab;
   
   // Actions
   actions: {
@@ -73,6 +76,9 @@ export interface VideoEditorState {
     removeTimelineElement: (id: string) => void;
     setSelectedElement: (id: string | null) => void;
     
+    // UI management
+    setActiveSidebarTab: (tab: SidebarTab) => void;
+    
     // Utility
     reset: () => void;
   };
@@ -88,6 +94,7 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
   timelineElements: [],
   selectedElementId: null,
   isFileLoaded: false,
+  activeSidebarTab: 'files',
   
   actions: {
     // Playback controls
@@ -189,6 +196,9 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
     
     setSelectedElement: (id: string | null) => set({ selectedElementId: id }),
     
+    // UI management
+    setActiveSidebarTab: (tab: SidebarTab) => set({ activeSidebarTab: tab }),
+    
     // Utility
     reset: () => set({
       isPlaying: false,
@@ -198,7 +208,8 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
       mediaFiles: [],
       timelineElements: [],
       selectedElementId: null,
-      isFileLoaded: false
+      isFileLoaded: false,
+      activeSidebarTab: 'files'
     })
   }
 }));
