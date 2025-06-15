@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
@@ -49,14 +49,13 @@ export function FilesPanel() {
     <ScrollArea className="w-full h-full p-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-foreground font-medium text-sm">Media Files</h3>
+          <h3 className="text-foreground font-medium text-sm">Project Files</h3>
           <MediaUploader variant="button" className="h-8 text-xs" />
         </div>
         
         {mediaFiles.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground text-sm mb-4">No media files imported yet</p>
-            <MediaUploader />
           </div>
         ) : (
           <div className="space-y-2">
@@ -116,6 +115,7 @@ export function FilesPanel() {
           </div>
         )}
       </div>
+      <ScrollBar orientation='horizontal' />
     </ScrollArea>
   );
 }

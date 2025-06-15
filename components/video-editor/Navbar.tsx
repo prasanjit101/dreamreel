@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, Share } from 'lucide-react';
+import { Download, FolderOpen, Share } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { MediaUploader } from './MediaUploader';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
@@ -44,7 +44,7 @@ export function Navbar() {
       {/* Center section - Project name */}
       <div className="flex-1 max-w-md mx-8">
         <Input 
-          value="Untitled video"
+          value="Untitled project"
           className="bg-transparent border-none text-center text-foreground focus:bg-muted focus:border-border"
           readOnly
         />
@@ -52,18 +52,15 @@ export function Navbar() {
 
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
-        <MediaUploader variant="button" />
-        
         <Button 
-          variant="outline" 
           size="sm"
-          onClick={handleShare}
-          disabled={timelineElements.length === 0}
+          onClick={handleExport}
+          variant={'outline'}
         >
-          <Share className="w-4 h-4 mr-2" />
-          Share
+          <FolderOpen className="w-4 h-4 mr-2" />
+          Open Project
         </Button>
-        
+
         <Button 
           variant="outline" 
           size="sm"
