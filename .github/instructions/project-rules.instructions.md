@@ -1,6 +1,3 @@
----
-applyTo: '**'
----
 Here is more detailed context about the project that you are tasked to build:
 <project>
 - The project named 'Dreamreel' is a web based video editor app that allows users to create, edit videos and export them in mp4 format
@@ -47,4 +44,10 @@ Our updated tech stack -
 - Remotion lambda for video rendering
 - Tailwind css for styling
 - Typescript
+- Sqlite Libsql for database
+- Better auth for authentication
+- Drizzle for database ORM
+- Resend for email
+- react email for email templates
+- backblaze s3 compatible api for file storage
 </tech_stack>

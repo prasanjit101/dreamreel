@@ -17,6 +17,11 @@ export const env = createEnv({
       .default('development'),
     SLACK_NOTIFICATION_URL: z.string().optional(),
     RESEND_API_KEY: z.string(),
+    AWS_ACCESS_KEY_ID: z.string(),
+    AWS_SECRET_ACCESS_KEY: z.string(),
+    AWS_SESSION_TOKEN: z.string(),
+    BACKBLAZE_ENDPOINT: z.string(),
+    BACKBLAZE_REGION: z.string(),
   },
 
   /**
@@ -42,6 +47,11 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+    AWS_SESSION_TOKEN: process.env.AWS_SESSION_TOKEN,
+    BACKBLAZE_ENDPOINT: process.env.BACKBLAZE_ENDPOINT,
+    BACKBLAZE_REGION: process.env.BACKBLAZE_REGION,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

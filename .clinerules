@@ -44,5 +44,10 @@ Our updated tech stack -
 - Remotion lambda for video rendering
 - Tailwind css for styling
 - Typescript
-- 
+- Sqlite Libsql for database
+- Better auth for authentication
+- Drizzle for database ORM
+- Resend for email
+- react email for email templates
+- backblaze s3 compatible api for file storage
 </tech_stack>
