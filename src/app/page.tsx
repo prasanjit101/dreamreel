@@ -7,48 +7,53 @@ import Timeline from "@/components/video-editor/Timeline";
 import { Toaster } from "sonner";
 import AgentPanel from "@/components/video-editor/AgentPanel";
 import { HydrateClient } from '@/trpc/server';
+import { getSession } from "auth";
+import { LoginDialog } from "@/components/login-dialog";
 
 
 export default async function Home() {
+  const session = await getSession();
+
   return (
     <HydrateClient>
-    <div className="h-screen overflow-hidden flex flex-col bg-background">
-      {/* Top Navigation Bar */}
-      <Navbar />
+      {!session && <LoginDialog />}
+      <div className="h-screen overflow-hidden flex flex-col bg-background">
+        {/* Top Navigation Bar */}
+        <Navbar />
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex">
-        {/* left panel */}
-        <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
-          {/* Dynamic Asset Box - Content changes based on sidebar selection */}
-          <div className="flex-1 flex flex-col">
-            {/* Horizontal Sidebar at the top */}
-            <div className="flex justify-center border-b border-border">
-              <Sidebar />
+        {/* Main Editor Area */}
+        <div className="flex-1 flex">
+          {/* left panel */}
+          <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
+            {/* Dynamic Asset Box - Content changes based on sidebar selection */}
+            <div className="flex-1 flex flex-col">
+              {/* Horizontal Sidebar at the top */}
+              <div className="flex justify-center border-b border-border">
+                <Sidebar />
+              </div>
+              <AssetBox />
             </div>
-            <AssetBox />
+            {/* Properties Panel at the bottom */}
+            <div className="flex-1 overflow-auto border-t border-border">
+              <PropertiesPanel />
+            </div>
           </div>
-          {/* Properties Panel at the bottom */}
-          <div className="flex-1 overflow-auto border-t border-border">
-            <PropertiesPanel />
+
+          <div className="flex-1 flex flex-col max-w-4xl">
+            {/* Main Player Area */}
+            <VideoPlayer />
+            <Timeline />
+          </div>
+
+          {/* Right Sidebar with Properties */}
+          <div className="w-65 border-l border-border flex flex-col">
+            <AgentPanel />
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col max-w-4xl">
-          {/* Main Player Area */}
-          <VideoPlayer />
-          <Timeline />
-        </div>
-
-        {/* Right Sidebar with Properties */}
-        <div className="w-65 border-l border-border flex flex-col">
-          <AgentPanel />
-        </div>
+        {/* Toast notifications */}
+        <Toaster position="top-right" />
       </div>
-
-      {/* Toast notifications */}
-      <Toaster position="top-right" />
-    </div>
     </HydrateClient>
   );
 }
