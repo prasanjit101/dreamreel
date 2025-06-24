@@ -1,0 +1,6 @@
+.clinerules
+.cursorindexignore
+.cursorignore
+node_modules/
+.next/
+.bolt/

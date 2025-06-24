@@ -1,5 +1,3 @@
-"use client";
-
 import { Navbar } from "@/components/video-editor/Navbar";
 import { Sidebar } from "@/components/video-editor/sidebar";
 import { AssetBox } from "@/components/video-editor/AssetBox";
@@ -11,7 +9,7 @@ import AgentPanel from "@/components/video-editor/AgentPanel";
 import { HydrateClient } from '@/trpc/server';
 
 
-export default function Home() {
+export default async function Home() {
   return (
     <HydrateClient>
     <div className="h-screen overflow-hidden flex flex-col bg-background">

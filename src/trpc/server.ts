@@ -1,4 +1,3 @@
-'use server';
 import 'server-only';
 
 import { createHydrationHelpers } from '@trpc/react-query/rsc';
