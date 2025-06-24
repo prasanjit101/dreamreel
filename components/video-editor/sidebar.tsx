@@ -27,18 +27,17 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-16 bg-sidebar border-r border-sidebar-border flex flex-col">
-      <Separator className="bg-sidebar-border" />
+    <div className="bg-sidebar w-full flex flex-row justify-center py-2">
 
       {/* Tools */}
-      <div className="flex-1 p-3 space-y-2">
+      <div className="flex space-x-2">
         {tools.map((tool) => (
           <Button
             key={tool.id}
             variant="ghost"
             size="sm"
             onClick={() => handleToolClick(tool.id)}
-            className={`w-full p-2 h-auto flex flex-col gap-1 ${
+            className={`p-2 flex gap-1 ${
               activeSidebarTab === tool.id
                 ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90" 
                 : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
