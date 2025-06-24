@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import Script from "next/script";
+import { env } from "@/env";
+import { TRPCReactProvider } from '@/trpc/react';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +32,24 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#2563eb" />
+        <Script async src="https://tally.so/widgets/embed.js"></Script>
+        <link rel="canonical" href={env.NEXT_PUBLIC_APP_URL} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Dreamreel",
+            "description": "A video editor for the age of AI.",
+            "url": env.NEXT_PUBLIC_APP_URL,
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+          })}
+        </script>
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
@@ -36,7 +57,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TRPCReactProvider>{children}</TRPCReactProvider>
         </ThemeProvider>
       </body>
     </html>

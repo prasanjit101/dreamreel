@@ -8,9 +8,12 @@ import { PropertiesPanel } from "@/components/video-editor/PropertiesPanel";
 import Timeline from "@/components/video-editor/Timeline";
 import { Toaster } from "sonner";
 import AgentPanel from "@/components/video-editor/AgentPanel";
+import { HydrateClient } from '@/trpc/server';
+
 
 export default function Home() {
   return (
+    <HydrateClient>
     <div className="h-screen overflow-hidden flex flex-col bg-background">
       {/* Top Navigation Bar */}
       <Navbar />
@@ -48,5 +51,6 @@ export default function Home() {
       {/* Toast notifications */}
       <Toaster position="top-right" />
     </div>
+    </HydrateClient>
   );
 }
