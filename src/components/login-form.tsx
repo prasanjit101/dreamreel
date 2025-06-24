@@ -1,5 +1,5 @@
 'use client';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 
 import { signInGoogle } from '@/lib/auth-client';
@@ -9,9 +9,14 @@ export function LoginButton({
   redirectUrl,
   text = 'Sign up',
   ...props
-}: ButtonProps & {
+}: {
   redirectUrl?: string;
-    text: string;
+  text?: string;
+} & React.ComponentProps<typeof Button> & {
+  className?: string;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  asChild?: boolean;
 }) {
 
   return (
