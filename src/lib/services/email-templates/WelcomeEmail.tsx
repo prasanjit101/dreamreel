@@ -1,4 +1,4 @@
-import { Logo } from '@/components/block/Logo';
+import { Logo } from '@/components/Logo';
 import { Html, Head, Body, Container, Section, Heading, Text, Button } from '@react-email/components';
 import { Tailwind } from '@react-email/tailwind';
 

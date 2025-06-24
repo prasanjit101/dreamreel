@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "env";
 import { Category } from "@/lib/constant";
 import { createId } from "@paralleldrive/cuid2";
 import { ReportInsert } from "../db/schema/reports";

@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "env";
 
 export default function Sitemap() {
     const baseUrl = env.NEXT_PUBLIC_APP_URL;

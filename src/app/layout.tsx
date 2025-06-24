@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import Script from "next/script";
-import { env } from "@/env";
+import { env } from "env";
 import { TRPCReactProvider } from '@/trpc/react';
 
 const geistSans = Geist({
