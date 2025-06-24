@@ -7,7 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "email": "email dev"
+    "email-preview": "email dev --port 3002 --dir src/lib/services/email-templates/",
+    "check": "next lint && tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+    "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+    "lint:fix": "next lint --fix",
+    "preview": "next build && next start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

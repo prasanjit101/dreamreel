@@ -7,7 +7,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { nextCookies } from "better-auth/next-js";
-import { createAuthMiddleware, multiSession } from "better-auth/plugins"
+import { createAuthMiddleware, multiSession, admin } from "better-auth/plugins"
 import { sendAdminSlackNotification } from "@/lib/services/notification";
 import { resend } from "@/lib/services/resend";
 import WelcomeEmail from "@/lib/services/email-templates/WelcomeEmail";
@@ -48,6 +48,7 @@ export const auth = betterAuth({
         multiSession({
             maximumSessions: 2,
         }),
+        admin()
     ],
     databaseHooks: {
         user: {

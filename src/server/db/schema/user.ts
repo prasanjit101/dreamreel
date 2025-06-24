@@ -12,10 +12,17 @@ export const user = sqliteTable("user", {
   onboard: integer('onboard', { mode: 'boolean' }).default(true),
   metadata: text('metadata'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  role: text('role').notNull().default('user'),
+  banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
+  banReason: text('ban_reason'),
+  banExpires: integer('ban_expires', { mode: 'timestamp' }),
 });
 
 export type User = typeof user.$inferSelect;
 export const selectUserSchema = createSelectSchema(user);
 export const insertUserSchema = createInsertSchema(user);
 export const updateUserSchema = createUpdateSchema(user);
+export type UserSelect = typeof user.$inferSelect;
+export type UserInsert = typeof user.$inferInsert;
+export type UserUpdate = Partial<UserSelect>;
