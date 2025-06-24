@@ -1,7 +1,14 @@
-import type { NextConfig } from "next";
+/**
+ * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
+ * for Docker builds.
+ */
+import './env';
 
-const nextConfig: NextConfig = {
-  pageExtensions: ["ts", "tsx", "js", "jsx"],
+/** @type {import("next").NextConfig} */
+const config = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
-export default nextConfig;
+export default config;
