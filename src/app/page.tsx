@@ -17,25 +17,22 @@ export default async function Home() {
   return (
     <HydrateClient>
       {!session && <LoginDialog />}
-      <div className="h-screen overflow-hidden flex flex-col bg-background">
+      <div className="h-screen flex flex-col bg-background">
         {/* Top Navigation Bar */}
         <Navbar />
 
         {/* Main Editor Area */}
         <div className="flex-1 flex">
-          {/* left panel */}
-          <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
-            {/* Dynamic Asset Box - Content changes based on sidebar selection */}
-            <div className="flex-1 flex flex-col">
-              {/* Horizontal Sidebar at the top */}
-              <div className="flex justify-center border-b border-border">
-                <Sidebar />
+          {/* Left Panel */}
+          <div className="flex flex-col border-r border-border">
+            <Sidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto border-b border-border">
+                <AssetBox />
               </div>
-              <AssetBox />
-            </div>
-            {/* Properties Panel at the bottom */}
-            <div className="flex-1 overflow-auto border-t border-border">
-              <PropertiesPanel />
+              <div className="flex-1 overflow-y-auto">
+                <PropertiesPanel />
+              </div>
             </div>
           </div>
 

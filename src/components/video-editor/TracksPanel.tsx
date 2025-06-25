@@ -61,7 +61,6 @@ export function TracksPanel() {
   };
 
   return (
-    <ScrollArea className="w-full h-full p-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-foreground font-medium text-sm">Timeline Tracks</h3>
@@ -172,7 +171,6 @@ export function TracksPanel() {
             })}
           </div>
         )}
-      </div>
-    </ScrollArea>
+    </div>
   );
 }

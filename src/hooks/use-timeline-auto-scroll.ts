@@ -24,7 +24,7 @@ export const useTimelineAutoScroll = ({
   scrollSpeed = 2,
   edgeThreshold = 50
 }: UseTimelineAutoScrollProps): UseTimelineAutoScrollReturn => {
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const scrollDirectionRef = useRef<'left' | 'right' | null>(null);
   const scrollSpeedRef = useRef<number>(0);
 
