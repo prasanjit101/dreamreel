@@ -107,12 +107,28 @@ export const getClipIcon = (elementType: TimelineElement['type']) => {
  * @returns True if the media type is compatible with the track.
  */
 export const isMediaTypeCompatibleWithTrack = (mediaType: string, trackNumber: number): boolean => {
+  console.log('Checking track compatibility:', { mediaType, trackNumber });
+  
   switch (trackNumber) {
-    case 0: return mediaType === 'video';
-    case 1: return mediaType === 'audio';
-    case 2: return mediaType === 'text';
-    case 3: return mediaType === 'image';
-    default: return true; // Custom tracks accept any type
+    case 0: 
+      const videoCompatible = mediaType === 'video';
+      console.log('Video track compatibility:', videoCompatible);
+      return videoCompatible;
+    case 1: 
+      const audioCompatible = mediaType === 'audio';
+      console.log('Audio track compatibility:', audioCompatible);
+      return audioCompatible;
+    case 2: 
+      const textCompatible = mediaType === 'text';
+      console.log('Text track compatibility:', textCompatible);
+      return textCompatible;
+    case 3: 
+      const imageCompatible = mediaType === 'image';
+      console.log('Image track compatibility:', imageCompatible);
+      return imageCompatible;
+    default: 
+      console.log('Custom track - accepting all types');
+      return true; // Custom tracks accept any type
   }
 };
 
