@@ -2,21 +2,7 @@
 
 import React from 'react';
 import { TimelineElement, MediaFile } from '@/lib/store/video-editor-store.types';
-
-interface DropZone {
-  trackNumber: number;
-  position: number;
-  insertionType: 'before' | 'after' | 'exact';
-  targetElementId?: string;
-  isValid: boolean;
-}
-
-interface TimelineDropIndicatorProps {
-  dropZone: DropZone;
-  pixelsPerSecond: number;
-  trackLabel: string;
-  draggedItem: MediaFile | TimelineElement | null;
-}
+import { TimelineDropIndicatorProps } from './timeline.types';
 
 export const TimelineDropIndicator: React.FC<TimelineDropIndicatorProps> = ({
   dropZone,
@@ -27,7 +13,7 @@ export const TimelineDropIndicator: React.FC<TimelineDropIndicatorProps> = ({
   if (!dropZone || !draggedItem) return null;
 
   const position = dropZone.position * pixelsPerSecond;
-  const duration = 'duration' in draggedItem ? draggedItem.duration : (draggedItem.duration || 5);
+  const duration = ('duration' in draggedItem ? draggedItem.duration : draggedItem.duration) ?? 5;
   const width = duration * pixelsPerSecond;
   const name = 'name' in draggedItem ? draggedItem.name : (draggedItem.mediaFile?.name || 'Element');
 

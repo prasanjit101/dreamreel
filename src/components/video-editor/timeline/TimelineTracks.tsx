@@ -2,34 +2,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { TimelineClip } from '../TimelineClip';
-import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store.types';
+import { MediaFile, TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store.types';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { useTimelineAutoScroll } from '@/hooks/use-timeline-auto-scroll';
 import { DragPreview } from './DragPreview';
 import { TimelineDropIndicator } from './TimelineDropIndicator';
 import { isMediaTypeCompatibleWithTrack, hasTimelineCollision } from '@/utils/timelineUtils';
 import { toast } from 'sonner';
+import { DropZone, TimelineTracksProps } from './timeline.types';
 
-interface TimelineTracksProps {
-  allTrackNumbers: number[];
-  trackGroups: Record<number, TimelineElement[]>;
-  timelineElements: TimelineElement[];
-  duration: number;
-  trackHeight: number;
-  pixelsPerSecond: number;
-  selectedElementId: string | null;
-  actions: VideoEditorState['actions'];
-  tracksRef: React.RefObject<HTMLDivElement | null>;
-  zoom: number;
-}
-
-interface DropZone {
-  trackNumber: number;
-  position: number;
-  insertionType: 'before' | 'after' | 'exact';
-  targetElementId?: string;
-  isValid: boolean;
-}
 
 const EDGE_SNAP_THRESHOLD = 18; // pixels for edge detection
 const POSITION_SNAP_THRESHOLD = 10; // pixels for position snapping
@@ -260,8 +241,8 @@ export function TimelineTracks({
     setDragState(prev => ({
       ...prev,
       isDragging: true,
-      draggedMediaFile: dragType === 'new' ? draggedItem : null,
-      draggedElement: dragType === 'existing' ? draggedItem : null,
+      draggedMediaFile: dragType === 'new' ? draggedItem as MediaFile : null,
+      draggedElement: dragType === 'existing' ? draggedItem as TimelineElement : null,
       dragType,
       dropZone,
       dragPreview: {
@@ -293,7 +274,7 @@ export function TimelineTracks({
 
     const dragData = parseDragData(event.dataTransfer);
     if (!dragData || !dragState.dropZone?.isValid) {
-      toast.error('Invalid drop location');
+      toast.error('Timeline: Invalid drop location');
       setDragState(prev => ({ 
         ...prev, 
         isDragging: false, 
@@ -433,7 +414,7 @@ export function TimelineTracks({
       {dragState.dragPreview.visible && (dragState.draggedMediaFile || dragState.draggedElement) && (
         <DragPreview
           mediaFile={dragState.draggedMediaFile || (dragState.draggedElement?.mediaFile)}
-          element={dragState.draggedElement}
+          element={dragState.draggedElement ?? undefined}
           x={dragState.dragPreview.x}
           y={dragState.dragPreview.y}
           width={((dragState.draggedMediaFile?.duration || dragState.draggedElement?.duration || 5) * pixelsPerSecond)}

@@ -123,7 +123,7 @@ export const useDragAndDrop = ({
 
   const completeDrop = useCallback((event: DragEvent, trackNumber: number) => {
     if (!dragState.isDragging || !dragState.draggedItem || !dragState.dropTarget.isValid) {
-      toast.error('Invalid drop location');
+      toast.error('Drop failed: Invalid drop location');
       return false;
     }
 

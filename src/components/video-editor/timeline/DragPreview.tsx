@@ -4,17 +4,9 @@ import React from 'react';
 import { MediaFile, TimelineElement } from '@/lib/store/video-editor-store.types';
 import { getClipIcon, getClipColor } from '@/utils/timelineUtils';
 import { formatDuration } from '@/utils/mediaUtils';
+import { DragPreviewProps } from './timeline.types';
 
-interface DragPreviewProps {
-  mediaFile?: MediaFile;
-  element?: TimelineElement;
-  x: number;
-  y: number;
-  width: number;
-  visible: boolean;
-  isValidDrop: boolean;
-  dragType: 'new' | 'existing';
-}
+
 
 export const DragPreview: React.FC<DragPreviewProps> = ({
   mediaFile,
