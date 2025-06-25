@@ -8,8 +8,6 @@ import {
   Pause, 
   Volume2,
   VolumeX,
-  SkipBack,
-  SkipForward,
   ZoomIn,
   ZoomOut,
   Trash2,
@@ -130,13 +128,6 @@ export function TimelineControls({
     }
   };
 
-  const handleTrackSelect = (type: 'audio' | 'video' | 'image' | 'text') => {
-    setSelectedTrackType(type);
-    setCurrentConfig({}); // Reset config when selecting new type
-    setCurrentFile(undefined); // Reset file
-    setDialogOpen(true);
-  };
-
   const handleAddTrack = async () => {
     if (!selectedTrackType) return;
 
@@ -232,10 +223,10 @@ export function TimelineControls({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleTrackSelect('audio')}>Audio</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTrackSelect('video')}>Video</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTrackSelect('image')}>Image</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleTrackSelect('text')}>Text</DropdownMenuItem>
+            <DropdownMenuItem>Audio</DropdownMenuItem>
+            <DropdownMenuItem>Video</DropdownMenuItem>
+            <DropdownMenuItem>Image</DropdownMenuItem>
+            <DropdownMenuItem>Text</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

@@ -32,7 +32,7 @@ export function AssetBox({ className }: AssetBoxProps) {
   };
 
   return (
-    <div className={cn("w-full h-full bg-card border-r border-border", className)}>
+    <div className={cn("w-full h-full p-1 bg-card border-r border-border", className)}>
       {renderContent()}
     </div>
   );
