@@ -48,12 +48,19 @@ export function FilesPanel() {
   };
 
   const handleDragStart = (event: React.DragEvent, mediaFile: any) => {
+    console.log('Starting drag for media file:', mediaFile);
+    
     // Set the data to be transferred during drag
-    event.dataTransfer.setData('application/json', JSON.stringify({
+    const dragData = {
       mediaFileId: mediaFile.id,
-      mediaType: mediaFile.type
-    }));
+      mediaType: mediaFile.type,
+      source: 'filesPanel'
+    };
+    
+    event.dataTransfer.setData('application/json', JSON.stringify(dragData));
     event.dataTransfer.effectAllowed = 'copy';
+    
+    console.log('Drag data set:', dragData);
     
     // Create a custom drag image
     const dragImage = document.createElement('div');
@@ -67,13 +74,16 @@ export function FilesPanel() {
     
     // Clean up drag image after a short delay
     setTimeout(() => {
-      document.body.removeChild(dragImage);
-    }, 0);
+      if (document.body.contains(dragImage)) {
+        document.body.removeChild(dragImage);
+      }
+    }, 100);
   };
 
   const handleDragEnd = (event: React.DragEvent) => {
     // Remove any visual feedback
     event.currentTarget.classList.remove('opacity-50');
+    console.log('Drag ended for media file');
   };
 
   return (
