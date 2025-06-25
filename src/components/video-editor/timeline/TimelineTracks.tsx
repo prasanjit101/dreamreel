@@ -89,39 +89,74 @@ export function TimelineTracks({
     return !hasTimelineCollision({ startTime: position, duration }, elementsOnTrack);
   };
 
+  const parseDragData = (dataTransfer: DataTransfer) => {
+    try {
+      const jsonData = dataTransfer.getData('application/json');
+      
+      // Check if we have valid JSON data
+      if (!jsonData || jsonData.trim() === '') {
+        console.warn('No drag data available');
+        return null;
+      }
+      
+      const dragData = JSON.parse(jsonData);
+      
+      // Validate the structure of drag data
+      if (!dragData || typeof dragData !== 'object' || !dragData.mediaFileId) {
+        console.warn('Invalid drag data structure:', dragData);
+        return null;
+      }
+      
+      return dragData;
+    } catch (error) {
+      console.warn('Failed to parse drag data:', error);
+      return null;
+    }
+  };
+
   const handleDragOver = (event: React.DragEvent, trackNumber: number) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'copy';
 
-    try {
-      const dragData = JSON.parse(event.dataTransfer.getData('application/json'));
-      const mediaFile = mediaFiles.find(file => file.id === dragData.mediaFileId);
-      
-      if (!mediaFile) return;
-
-      const position = calculateDropPosition(event, event.currentTarget as HTMLElement);
-      const duration = mediaFile.duration || 5;
-      const isValid = validateDrop(mediaFile.type, trackNumber, position, duration);
-
+    const dragData = parseDragData(event.dataTransfer);
+    if (!dragData) {
+      // Clear drag state if no valid data
       setDragState(prev => ({
         ...prev,
-        isDragging: true,
-        draggedMediaFile: mediaFile,
-        dragOverTrack: trackNumber,
-        dropPosition: position,
-        isValidDrop: isValid,
-        dragPreview: {
-          x: event.clientX,
-          y: event.clientY,
-          visible: true
-        }
+        isDragging: false,
+        draggedMediaFile: null,
+        dragOverTrack: null,
+        isValidDrop: false
       }));
-
-      // Handle auto-scrolling
-      handleAutoScrollMouseMove(event.nativeEvent);
-    } catch (error) {
-      console.error('Error in drag over:', error);
+      return;
     }
+
+    const mediaFile = mediaFiles.find(file => file.id === dragData.mediaFileId);
+    if (!mediaFile) {
+      console.warn('Media file not found:', dragData.mediaFileId);
+      return;
+    }
+
+    const position = calculateDropPosition(event, event.currentTarget as HTMLElement);
+    const duration = mediaFile.duration || 5;
+    const isValid = validateDrop(mediaFile.type, trackNumber, position, duration);
+
+    setDragState(prev => ({
+      ...prev,
+      isDragging: true,
+      draggedMediaFile: mediaFile,
+      dragOverTrack: trackNumber,
+      dropPosition: position,
+      isValidDrop: isValid,
+      dragPreview: {
+        x: event.clientX,
+        y: event.clientY,
+        visible: true
+      }
+    }));
+
+    // Handle auto-scrolling
+    handleAutoScrollMouseMove(event.nativeEvent);
   };
 
   const handleDragLeave = (event: React.DragEvent) => {
@@ -143,9 +178,24 @@ export function TimelineTracks({
     event.preventDefault();
     stopAutoScroll();
 
+    const dragData = parseDragData(event.dataTransfer);
+    if (!dragData) {
+      toast.error('Invalid drag operation');
+      setDragState(prev => ({ 
+        ...prev, 
+        isDragging: false, 
+        dragPreview: { ...prev.dragPreview, visible: false } 
+      }));
+      return;
+    }
+
     if (!dragState.isValidDrop || !dragState.draggedMediaFile) {
       toast.error('Invalid drop location');
-      setDragState(prev => ({ ...prev, isDragging: false, dragPreview: { ...prev.dragPreview, visible: false } }));
+      setDragState(prev => ({ 
+        ...prev, 
+        isDragging: false, 
+        dragPreview: { ...prev.dragPreview, visible: false } 
+      }));
       return;
     }
 
