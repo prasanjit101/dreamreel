@@ -49,7 +49,7 @@ export function TimelineTracks({
 
   // Auto-scroll hook
   const { handleMouseMove: handleAutoScrollMouseMove, stopAutoScroll } = useTimelineAutoScroll({
-    containerRef: timelineContainerRef,
+    containerRef: timelineContainerRef as React.RefObject<HTMLDivElement>,
     isActive: dragState.isDragging,
     scrollSpeed: 3,
     edgeThreshold: 60
