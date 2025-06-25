@@ -3,7 +3,6 @@
  */
 
 import { MediaFile } from '@/lib/store/video-editor-store';
-import { createId } from '@paralleldrive/cuid2';
 
 /**
  * Creates a MediaFile object from a File
@@ -11,7 +10,7 @@ import { createId } from '@paralleldrive/cuid2';
 export function createMediaFile(file: File): Promise<MediaFile> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
-    const id = createId(); // Use createId for consistent ID generation
+    const id = `media_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const mediaFile: MediaFile = {
       id,

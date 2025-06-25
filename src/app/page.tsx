@@ -9,8 +9,7 @@ import AgentPanel from "@/components/video-editor/AgentPanel";
 import { HydrateClient } from '@/trpc/server';
 import { getSession } from "auth";
 import { LoginDialog } from "@/components/login-dialog";
-import { ProjectSelectorDialog } from "@/components/project-selector-dialog";
-import { ProjectWrapper } from "@/components/project-wrapper";
+
 
 export default async function Home() {
   const session = await getSession();
@@ -18,8 +17,43 @@ export default async function Home() {
   return (
     <HydrateClient>
       {!session && <LoginDialog />}
-      {session && <ProjectWrapper />}
-      <Toaster position="top-right" />
+      <div className="h-screen overflow-hidden flex flex-col bg-background">
+        {/* Top Navigation Bar */}
+        <Navbar />
+
+        {/* Main Editor Area */}
+        <div className="flex-1 flex">
+          {/* left panel */}
+          <div className="h-full flex flex-col border-r border-border relative min-w-70 w-70">
+            {/* Dynamic Asset Box - Content changes based on sidebar selection */}
+            <div className="flex-1 flex flex-col">
+              {/* Horizontal Sidebar at the top */}
+              <div className="flex justify-center border-b border-border">
+                <Sidebar />
+              </div>
+              <AssetBox />
+            </div>
+            {/* Properties Panel at the bottom */}
+            <div className="flex-1 overflow-auto border-t border-border">
+              <PropertiesPanel />
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col max-w-4xl">
+            {/* Main Player Area */}
+            <VideoPlayer />
+            <Timeline />
+          </div>
+
+          {/* Right Sidebar with Properties */}
+          <div className="w-65 border-l border-border flex flex-col">
+            <AgentPanel />
+          </div>
+        </div>
+
+        {/* Toast notifications */}
+        <Toaster position="top-right" />
+      </div>
     </HydrateClient>
   );
 }
