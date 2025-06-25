@@ -99,3 +99,59 @@ export const getClipIcon = (elementType: TimelineElement['type']) => {
       return Video;
   }
 };
+
+/**
+ * Checks if a media type is compatible with a specific track.
+ * @param mediaType The type of media being dropped.
+ * @param trackNumber The track number where the media is being dropped.
+ * @returns True if the media type is compatible with the track.
+ */
+export const isMediaTypeCompatibleWithTrack = (mediaType: string, trackNumber: number): boolean => {
+  switch (trackNumber) {
+    case 0: return mediaType === 'video';
+    case 1: return mediaType === 'audio';
+    case 2: return mediaType === 'text';
+    case 3: return mediaType === 'image';
+    default: return true; // Custom tracks accept any type
+  }
+};
+
+/**
+ * Gets the default track number for a given media type.
+ * @param mediaType The type of media.
+ * @returns The default track number for the media type.
+ */
+export const getDefaultTrackForMediaType = (mediaType: string): number => {
+  switch (mediaType) {
+    case 'video': return 0;
+    case 'audio': return 1;
+    case 'text': return 2;
+    case 'image': return 3;
+    default: return 0;
+  }
+};
+
+/**
+ * Checks for collisions between timeline elements.
+ * @param newElement The new element being added.
+ * @param existingElements Array of existing elements on the same track.
+ * @returns True if there's a collision.
+ */
+export const hasTimelineCollision = (
+  newElement: { startTime: number; duration: number },
+  existingElements: TimelineElement[]
+): boolean => {
+  const newStart = newElement.startTime;
+  const newEnd = newElement.startTime + newElement.duration;
+
+  return existingElements.some(element => {
+    const elementStart = element.startTime;
+    const elementEnd = element.startTime + element.duration;
+    
+    return (
+      (newStart >= elementStart && newStart < elementEnd) ||
+      (newEnd > elementStart && newEnd <= elementEnd) ||
+      (newStart <= elementStart && newEnd >= elementEnd)
+    );
+  });
+};

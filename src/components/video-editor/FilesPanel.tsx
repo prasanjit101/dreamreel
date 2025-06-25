@@ -14,6 +14,7 @@ import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
  * This component displays all imported media files and provides functionality
  * to manage them. It shows file information like name, size, duration, and
  * provides options to add files to timeline or delete them.
+ * Now supports drag and drop to timeline tracks.
  */
 export function FilesPanel() {
   const { mediaFiles, actions } = useVideoEditorStore();
@@ -45,6 +46,23 @@ export function FilesPanel() {
     actions.removeMediaFile(fileId);
   };
 
+  const handleDragStart = (event: React.DragEvent, mediaFile: any) => {
+    // Set the data to be transferred during drag
+    event.dataTransfer.setData('application/json', JSON.stringify({
+      mediaFileId: mediaFile.id,
+      mediaType: mediaFile.type
+    }));
+    event.dataTransfer.effectAllowed = 'copy';
+    
+    // Add visual feedback
+    event.currentTarget.classList.add('opacity-50');
+  };
+
+  const handleDragEnd = (event: React.DragEvent) => {
+    // Remove visual feedback
+    event.currentTarget.classList.remove('opacity-50');
+  };
+
   return (
     <ScrollArea className="w-full h-full p-4">
       <div className="space-y-4">
@@ -62,7 +80,11 @@ export function FilesPanel() {
             {mediaFiles.map((file) => (
               <div
                 key={file.id}
-                className="bg-muted/50 rounded-lg p-3 border border-border hover:bg-muted/70 transition-colors"
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, file)}
+                onDragEnd={handleDragEnd}
+                className="bg-muted/50 rounded-lg p-3 border border-border hover:bg-muted/70 transition-colors cursor-grab active:cursor-grabbing"
+                title="Drag to timeline or click to add"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
