@@ -33,15 +33,6 @@ export interface DragPreviewProps {
     dragType: 'new' | 'existing';
 }
 
-
-export interface DropZone {
-    trackNumber: number;
-    position: number;
-    insertionType: 'before' | 'after' | 'exact';
-    targetElementId?: string;
-    isValid: boolean;
-}
-
 export interface TimelineDropIndicatorProps {
     dropZone: DropZone;
     pixelsPerSecond: number;

@@ -135,33 +135,64 @@ sequenceDiagram
 
 ### Valid Drop Conditions:
 1. **Track Compatibility**: Media type matches track requirements
-2. **No Collisions**: New position doesn't overlap existing elements
+2. **Smart Positioning**: Automatic collision avoidance with edge insertion
 3. **Valid Position**: Drop position is within timeline bounds
 
 ### Drop Zone Types:
-- **Exact**: Place at specific timeline position
-- **Before**: Insert before existing element (future feature)
-- **After**: Insert after existing element (future feature)
+- **Exact**: Place at specific timeline position (no collision)
+- **Before**: Insert before existing element (18px edge detection)
+- **After**: Insert after existing element (18px edge detection)
+
+## Edge Insertion System
+
+### Edge Detection Logic:
+- **Threshold**: 18 pixels from element start/end edges
+- **Priority**: Edge insertion takes precedence over exact positioning
+- **Visual Feedback**: Blue pulsing indicators for edge insertion modes
+- **Auto-Repositioning**: Automatically shifts affected elements to prevent overlap
+
+### Insertion Behavior:
+1. **Before Insertion**:
+   - Places new element at target element's start time
+   - Shifts target element and all subsequent elements right by new element's duration
+   - Visual indicator: Left-pointing blue arrow
+
+2. **After Insertion**:
+   - Places new element immediately after target element
+   - Shifts all subsequent elements right by new element's duration
+   - Visual indicator: Right-pointing blue arrow
+
+3. **Exact Placement**:
+   - Only when not within edge threshold
+   - Requires empty space with no collisions
+   - Visual indicator: Green positioning line
 
 ## Visual Feedback System
 
 ### Drag Preview
-- **Green Border**: Valid drop location
+- **Green Border**: Valid exact drop location
 - **Red Border**: Invalid drop location
 - **Blue Ring**: Existing element being dragged
 - **Item Info**: Shows name and duration
 
 ### Drop Indicators
 - **Green Line**: Exact drop position
-- **Green Preview**: Shows final element placement
+- **Green Preview**: Shows final element placement for exact drops
+- **Blue Preview**: Shows edge insertion placement (pulsing animation)
+- **Blue Arrows**: Direction indicators for before/after insertion
 - **Track Overlay**: Indicates valid/invalid track
-- **Contextual Messages**: Explains drop action
+- **Contextual Messages**: Explains drop action with timestamps
 
 ### Track States
 - **Default**: `bg-muted/20`
 - **Valid Drop**: `bg-green-500/10 border-green-500/30`
 - **Invalid Drop**: `bg-red-500/10 border-red-500/30`
 - **Hover**: `hover:bg-muted/30`
+
+### Animation System
+- **Timeline Elements**: 300ms ease-out transitions for repositioning
+- **Drop Indicators**: Pulsing animation for edge insertion modes
+- **Disabled During Drag**: No animations while actively dragging/resizing
 
 ## Auto-Scroll System
 
@@ -215,19 +246,20 @@ sequenceDiagram
 
 ## Future Enhancements
 
+### Implemented Features
+1. **Edge Insertion**: Insert before/after existing elements ✅
+   - 18-pixel threshold for edge detection
+   - Automatic repositioning of affected elements
+   - Enhanced visual feedback with insertion indicators
+
 ### Planned Features
-1. **Edge Insertion**: Insert before/after existing elements
-2. **Multi-Select Drag**: Drag multiple elements simultaneously
-3. **Snap to Grid**: Snap to timeline grid intervals
-4. **Magnetic Edges**: Snap to other element edges
-5. **Undo/Redo**: Support for drag operations in history
+1. **Multi-Select Drag**: Drag multiple elements simultaneously
+2. **Snap to Grid**: Snap to timeline grid intervals
+3. **Magnetic Edges**: Snap to other element edges
+4. **Undo/Redo**: Support for drag operations in history
 
 ### Potential Improvements
-1. **Touch Support**: Mobile drag and drop
-2. **Keyboard Navigation**: Keyboard-based element movement
-3. **Batch Operations**: Multiple file drops
-4. **Custom Drop Zones**: User-defined drop areas
-5. **Advanced Collision**: Smart collision resolution
+1. **Advanced Collision**: Smart collision resolution
 
 ## Debugging
 
@@ -249,27 +281,3 @@ const DEBUG_DRAG_DROP = true;
 2. **Visual Glitches**: Verify CSS transitions and z-index values
 3. **Performance Issues**: Monitor drag event frequency
 4. **State Inconsistency**: Check store update patterns
-
-## Testing
-
-### Manual Testing Checklist
-- [ ] Drag media file from Files Panel to each track type
-- [ ] Drag existing timeline element to different tracks
-- [ ] Test invalid drops (wrong track type)
-- [ ] Test collision detection
-- [ ] Verify auto-scroll functionality
-- [ ] Check visual feedback accuracy
-- [ ] Test drag cancellation (ESC key)
-- [ ] Verify cleanup after drag operations
-
-### Automated Testing
-Consider implementing:
-- Unit tests for utility functions
-- Integration tests for drag and drop flows
-- Visual regression tests for UI feedback
-- Performance tests for large timelines
-
----
-
-*Last Updated: January 2025*
-*Version: 1.0.0*

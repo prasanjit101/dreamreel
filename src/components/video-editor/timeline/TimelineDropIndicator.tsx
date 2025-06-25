@@ -20,9 +20,9 @@ export const TimelineDropIndicator: React.FC<TimelineDropIndicatorProps> = ({
   const getInsertionMessage = () => {
     switch (dropZone.insertionType) {
       case 'before':
-        return `Insert before existing item`;
+        return `Insert before existing item (${dropZone.position.toFixed(1)}s)`;
       case 'after':
-        return `Insert after existing item`;
+        return `Insert after existing item (${dropZone.position.toFixed(1)}s)`;
       case 'exact':
         return `Place at ${dropZone.position.toFixed(1)}s`;
       default:
@@ -64,19 +64,32 @@ export const TimelineDropIndicator: React.FC<TimelineDropIndicatorProps> = ({
           
           {/* Preview of where the item will be placed */}
           <div
-            className="absolute top-1 h-10 bg-green-500/30 border-2 border-green-500/50 rounded pointer-events-none z-15 flex items-center px-2"
+            className={`absolute top-1 h-10 border-2 rounded pointer-events-none z-15 flex items-center px-2 transition-all duration-200 ${dropZone.insertionType === 'before' || dropZone.insertionType === 'after'
+              ? 'bg-blue-500/30 border-blue-500/50 animate-pulse'
+              : 'bg-green-500/30 border-green-500/50'
+              }`}
             style={{ 
               left: `${position}px`, 
               width: `${Math.max(width, 60)}px` 
             }}
           >
-            <span className="text-xs text-green-700 dark:text-green-300 font-medium truncate">
+            <span className={`text-xs font-medium truncate ${dropZone.insertionType === 'before' || dropZone.insertionType === 'after'
+              ? 'text-blue-700 dark:text-blue-300'
+              : 'text-green-700 dark:text-green-300'
+              }`}>
               {name}
             </span>
-            {dropZone.insertionType !== 'exact' && (
-              <div className={`absolute ${
-                dropZone.insertionType === 'before' ? '-left-2' : '-right-2'
-              } top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-500`} />
+
+            {/* Insertion direction indicator */}
+            {dropZone.insertionType === 'before' && (
+              <div className="absolute -left-3 top-1/2 transform -translate-y-1/2">
+                <div className="w-0 h-0 border-t-4 border-b-4 border-r-6 border-transparent border-r-blue-500"></div>
+              </div>
+            )}
+            {dropZone.insertionType === 'after' && (
+              <div className="absolute -right-3 top-1/2 transform -translate-y-1/2">
+                <div className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-transparent border-l-blue-500"></div>
+              </div>
             )}
           </div>
         </>

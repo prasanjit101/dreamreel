@@ -91,7 +91,8 @@ export function TimelineClip({
         draggable={!isDragging && !isResizing}
         onDragStart={handleDragStart}
         className={cn(
-          'absolute rounded border-2 flex items-center px-2 cursor-move select-none transition-all duration-75',
+          'absolute rounded border-2 flex items-center px-2 cursor-move select-none',
+          isDragging || isResizing ? 'transition-none' : 'transition-all duration-300 ease-out',
           getClipColor(element.type),
           isSelected && 'ring-2 ring-white ring-opacity-50 shadow-lg',
           isDragging && 'opacity-80 scale-105 z-30 shadow-xl',

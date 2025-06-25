@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { DropZone, TimelineTracksProps } from './timeline.types';
 
 const EDGE_SNAP_THRESHOLD = 18; // pixels for edge detection
+const EDGE_INSERTION_THRESHOLD = 18; // pixels for before/after insertion detection
 
 export function TimelineTracks({
   allTrackNumbers,
@@ -105,6 +106,39 @@ export function TimelineTracks({
       };
     }
 
+    // Convert position to pixels for edge detection
+    const positionInPixels = position * pixelsPerSecond;
+
+    // Check for edge insertion opportunities
+    for (const element of elementsOnTrack) {
+      const elementStartPixels = element.startTime * pixelsPerSecond;
+      const elementEndPixels = (element.startTime + element.duration) * pixelsPerSecond;
+
+      // Check if we're near the start edge (insert before)
+      if (Math.abs(positionInPixels - elementStartPixels) <= EDGE_INSERTION_THRESHOLD) {
+        console.log('Insert before element:', element.id);
+        return {
+          trackNumber,
+          position: element.startTime,
+          insertionType: 'before',
+          isValid: true,
+          targetElementId: element.id
+        };
+      }
+
+      // Check if we're near the end edge (insert after)
+      if (Math.abs(positionInPixels - elementEndPixels) <= EDGE_INSERTION_THRESHOLD) {
+        console.log('Insert after element:', element.id);
+        return {
+          trackNumber,
+          position: element.startTime + element.duration,
+          insertionType: 'after',
+          isValid: true,
+          targetElementId: element.id
+        };
+      }
+    }
+
     // Check for exact position placement (no collision)
     const hasCollision = elementsOnTrack.some(element => {
       const elementStart = element.startTime;
@@ -121,11 +155,39 @@ export function TimelineTracks({
 
     console.log('Collision check:', { hasCollision, position });
 
+    // If no collision and not near edges, allow exact placement
+    if (!hasCollision) {
+      return {
+        trackNumber,
+        position,
+        insertionType: 'exact',
+        isValid: true
+      };
+    }
+
+    // Find the best insertion point in a gap
+    for (let i = 0; i < elementsOnTrack.length - 1; i++) {
+      const currentElement = elementsOnTrack[i];
+      const nextElement = elementsOnTrack[i + 1];
+      const gapStart = currentElement.startTime + currentElement.duration;
+      const gapEnd = nextElement.startTime;
+
+      if (position >= gapStart && position + duration <= gapEnd) {
+        return {
+          trackNumber,
+          position,
+          insertionType: 'exact',
+          isValid: true
+        };
+      }
+    }
+
+    // If we can't place anywhere, return invalid
     return {
       trackNumber,
       position,
       insertionType: 'exact',
-      isValid: !hasCollision
+      isValid: false
     };
   };
 
@@ -231,6 +293,22 @@ export function TimelineTracks({
     }
   };
 
+  const shiftElementsOnTrack = (trackNumber: number, fromStartTime: number, shiftAmount: number, excludeElementId?: string) => {
+    const elementsToShift = timelineElements.filter(el =>
+      el.track === trackNumber &&
+      el.startTime >= fromStartTime &&
+      el.id !== excludeElementId
+    );
+
+    elementsToShift.forEach(element => {
+      actions.updateTimelineElement(element.id, {
+        startTime: Math.max(0, element.startTime + shiftAmount)
+      });
+    });
+
+    console.log(`Shifted ${elementsToShift.length} elements by ${shiftAmount}s on track ${trackNumber}`);
+  };
+
   const handleDrop = (event: React.DragEvent, trackNumber: number) => {
     event.preventDefault();
     stopAutoScroll();
@@ -273,7 +351,24 @@ export function TimelineTracks({
         return;
       }
 
-      console.log('Moving existing element:', { elementId: element.id, newStartTime: finalDropZone.position, trackNumber });
+      console.log('Moving existing element:', {
+        elementId: element.id,
+        insertionType: finalDropZone.insertionType,
+        newStartTime: finalDropZone.position,
+        trackNumber
+      });
+
+      // Handle different insertion types
+      if (finalDropZone.insertionType === 'before' && finalDropZone.targetElementId) {
+        // Insert before: place element at target position, shift target and subsequent elements right
+        const targetElement = timelineElements.find(el => el.id === finalDropZone.targetElementId);
+        if (targetElement) {
+          shiftElementsOnTrack(trackNumber, targetElement.startTime, element.duration, element.id);
+        }
+      } else if (finalDropZone.insertionType === 'after' && finalDropZone.targetElementId) {
+        // Insert after: place element after target, shift subsequent elements right if needed
+        shiftElementsOnTrack(trackNumber, finalDropZone.position, element.duration, element.id);
+      }
       
       // Update the element's position and track
       actions.updateTimelineElement(element.id, {
@@ -281,7 +376,9 @@ export function TimelineTracks({
         track: trackNumber
       });
       
-      toast.success(`${element.mediaFile?.name || 'Element'} repositioned`);
+      const insertionTypeText = finalDropZone.insertionType === 'before' ? 'inserted before' :
+        finalDropZone.insertionType === 'after' ? 'inserted after' : 'repositioned';
+      toast.success(`${element.mediaFile?.name || 'Element'} ${insertionTypeText}`);
       
     } else if (dragData.mediaFileId) {
       // Adding new media file
@@ -306,13 +403,32 @@ export function TimelineTracks({
         return;
       }
 
-      console.log('Adding new media file:', { mediaFileId: mediaFile.id, newStartTime: finalDropZone.position, trackNumber });
+      console.log('Adding new media file:', {
+        mediaFileId: mediaFile.id,
+        insertionType: finalDropZone.insertionType,
+        newStartTime: finalDropZone.position,
+        trackNumber
+      });
+
+      const newElementDuration = mediaFile.duration || 5;
+
+      // Handle different insertion types for new media
+      if (finalDropZone.insertionType === 'before' && finalDropZone.targetElementId) {
+        // Insert before: place element at target position, shift target and subsequent elements right
+        const targetElement = timelineElements.find(el => el.id === finalDropZone.targetElementId);
+        if (targetElement) {
+          shiftElementsOnTrack(trackNumber, targetElement.startTime, newElementDuration);
+        }
+      } else if (finalDropZone.insertionType === 'after' && finalDropZone.targetElementId) {
+        // Insert after: place element after target, shift subsequent elements right if needed
+        shiftElementsOnTrack(trackNumber, finalDropZone.position, newElementDuration);
+      }
 
       const newElement: TimelineElement = {
         id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: mediaFile.type,
         startTime: finalDropZone.position,
-        duration: mediaFile.duration || 5,
+        duration: newElementDuration,
         track: trackNumber,
         mediaFile,
         properties: {
@@ -323,7 +439,9 @@ export function TimelineTracks({
       actions.addTimelineElement(newElement);
       actions.setSelectedElement(newElement.id);
       
-      toast.success(`${mediaFile.name} added to timeline`);
+      const insertionTypeText = finalDropZone.insertionType === 'before' ? 'inserted before existing item' :
+        finalDropZone.insertionType === 'after' ? 'inserted after existing item' : 'added';
+      toast.success(`${mediaFile.name} ${insertionTypeText}`);
     } else {
       console.log('Unknown drag data format on drop');
       toast.error('Invalid drop operation');
