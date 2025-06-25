@@ -51,7 +51,7 @@ export function Navbar() {
       {/* Center section - Project name */}
       <div className="flex-1 max-w-md mx-8">
         <Input 
-          value="Untitled project"
+          value="New project"
           className="bg-transparent border-none text-center text-foreground focus:bg-muted focus:border-border"
           readOnly
         />
@@ -59,15 +59,6 @@ export function Navbar() {
 
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
-        <Button 
-          size="sm"
-          onClick={handleExport}
-          variant={'outline'}
-        >
-          <FolderOpen className="w-4 h-4 mr-2" />
-          Open Project
-        </Button>
-
         <Button 
           variant="outline" 
           size="sm"
