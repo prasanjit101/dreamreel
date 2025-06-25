@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TimelineElement } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 
 interface VideoConfigFormProps {
   onConfigChange: (config: { resolution: string; playbackSpeed: number; file?: File }) => void;

@@ -1,4 +1,4 @@
-import { TimelineElement } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 import { Volume2, VolumeX, Type, Image, Video, Music } from 'lucide-react';
 import * as React from 'react';
 

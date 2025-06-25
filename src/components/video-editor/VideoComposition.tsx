@@ -10,7 +10,9 @@ import {
   useVideoConfig,
   Sequence
 } from 'remotion';
-import { useVideoEditorStore, TimelineElement } from '@/lib/store/video-editor-store';
+import { useVideoEditorStore } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
+
 
 interface VideoCompositionProps {
   // Props can be passed from the player if needed

@@ -34,7 +34,7 @@ import { AudioConfigForm } from '@/components/video-editor/track-config-forms/Au
 import { VideoConfigForm } from '@/components/video-editor/track-config-forms/VideoConfigForm';
 import { ImageConfigForm } from '@/components/video-editor/track-config-forms/ImageConfigForm';
 import { TextConfigForm } from '@/components/video-editor/track-config-forms/TextConfigForm';
-import { VideoEditorState, TimelineElement, MediaFile } from '@/lib/store/video-editor-store';
+import { VideoEditorState, TimelineElement, MediaFile } from '@/lib/store/video-editor-store.types';
 import { formatDuration } from '@/utils/mediaUtils';
 
 interface TimelineControlsProps {

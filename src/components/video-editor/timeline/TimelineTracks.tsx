@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TimelineClip } from '../TimelineClip';
-import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store';
+import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-store.types';
 
 interface TimelineTracksProps {
   allTrackNumbers: number[];

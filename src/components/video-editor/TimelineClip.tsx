@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from 'react';
-import { TimelineElement } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 import { formatDuration } from '@/utils/mediaUtils';
 import { cn } from '@/lib/utils';
 import { getClipColor } from '@/utils/timelineUtils';

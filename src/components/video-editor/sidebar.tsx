@@ -6,7 +6,9 @@ import {
   Files,
   Layers,
 } from "lucide-react";
-import { useVideoEditorStore, SidebarTab } from '@/lib/store/video-editor-store';
+import { useVideoEditorStore } from '@/lib/store/video-editor-store';
+import { SidebarTab } from '@/lib/store/video-editor-store.types';
+
 
 interface SidebarTool {
   id: SidebarTab;

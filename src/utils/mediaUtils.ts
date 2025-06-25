@@ -2,7 +2,7 @@
  * Utility functions for handling media files in the video editor
  */
 
-import { MediaFile } from '@/lib/store/video-editor-store';
+import { MediaFile } from '@/lib/store/video-editor-store.types';
 
 /**
  * Creates a MediaFile object from a File

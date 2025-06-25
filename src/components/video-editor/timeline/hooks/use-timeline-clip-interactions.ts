@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useVideoEditorStore, TimelineElement } from '@/lib/store/video-editor-store';
+import { useVideoEditorStore } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 import { findNearestSnap, getSnapPoints } from '@/utils/timelineUtils';
 
 interface UseTimelineClipInteractionsProps {

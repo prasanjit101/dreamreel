@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { TimelineElement } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 import { Volume2, VolumeX } from 'lucide-react';
 import { getClipIcon } from '@/utils/timelineUtils';
 
