@@ -155,3 +155,42 @@ export const hasTimelineCollision = (
     );
   });
 };
+
+/**
+ * Calculates the optimal insertion position for a new element to avoid collisions.
+ * @param trackElements Existing elements on the target track.
+ * @param preferredStartTime The preferred start time for the new element.
+ * @param duration The duration of the new element.
+ * @returns The optimal start time that avoids collisions.
+ */
+export const findOptimalInsertionPosition = (
+  trackElements: TimelineElement[],
+  preferredStartTime: number,
+  duration: number
+): number => {
+  if (trackElements.length === 0) {
+    return Math.max(0, preferredStartTime);
+  }
+
+  // Sort elements by start time
+  const sortedElements = [...trackElements].sort((a, b) => a.startTime - b.startTime);
+  
+  // Check if preferred position works
+  if (!hasTimelineCollision({ startTime: preferredStartTime, duration }, trackElements)) {
+    return Math.max(0, preferredStartTime);
+  }
+
+  // Find the first available gap
+  let currentTime = 0;
+  
+  for (const element of sortedElements) {
+    if (currentTime + duration <= element.startTime) {
+      // Found a gap before this element
+      return currentTime;
+    }
+    currentTime = Math.max(currentTime, element.startTime + element.duration);
+  }
+  
+  // No gap found, place at the end
+  return currentTime;
+};
