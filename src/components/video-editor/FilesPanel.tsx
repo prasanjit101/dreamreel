@@ -5,7 +5,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
-import { Trash2, Play, GripVertical } from 'lucide-react';
+import { Trash2, Play, GripVertical, Plus } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
 import { useDragAndDrop } from '@/hooks/use-drag-and-drop';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -81,7 +81,13 @@ export function FilesPanel() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-foreground font-medium text-sm">Project Files</h3>
+        <div className="flex items-center gap-2">
           <MediaUploader variant="button" className="h-8 text-xs" />
+          <Button variant="outline" size="icon" className="h-8 text-xs">
+            {/* this button will open a modal where the user can generate video, audio, image or text */}
+            <Plus className="w-3 h-3" />
+          </Button>
+        </div>
         </div>
         
         {mediaFiles.length === 0 ? (

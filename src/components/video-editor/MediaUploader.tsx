@@ -99,7 +99,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           className={className}
         >
           <Upload className="w-4 h-4 mr-2" />
-          Import Media
+          Import
         </Button>
       </>
     );

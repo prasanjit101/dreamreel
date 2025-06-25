@@ -39,7 +39,7 @@ export function Sidebar() {
             <Tooltip key={tool.id}>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handleToolClick(tool.id)}
                   className={`p-2 flex gap-1 ${activeSidebarTab === tool.id
@@ -51,7 +51,7 @@ export function Sidebar() {
                   <tool.icon className="w-5 h-5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="text-xs font-medium">
+              <TooltipContent side="bottom" className="text-xs font-medium">
                 {tool.label}
               </TooltipContent>
             </Tooltip>
