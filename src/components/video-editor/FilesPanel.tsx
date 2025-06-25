@@ -7,7 +7,6 @@ import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
 import { Trash2, Play, GripVertical, Plus } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
-import { useDragAndDrop } from '@/hooks/use-drag-and-drop';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /**

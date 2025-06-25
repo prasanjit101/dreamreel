@@ -6,6 +6,7 @@ import { TimelineElement, VideoEditorState } from '@/lib/store/video-editor-stor
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { useTimelineAutoScroll } from '@/hooks/use-timeline-auto-scroll';
 import { DragPreview } from './DragPreview';
+import { TimelineDropIndicator } from './TimelineDropIndicator';
 import { isMediaTypeCompatibleWithTrack, hasTimelineCollision } from '@/utils/timelineUtils';
 import { toast } from 'sonner';
 
@@ -21,6 +22,17 @@ interface TimelineTracksProps {
   tracksRef: React.RefObject<HTMLDivElement | null>;
   zoom: number;
 }
+
+interface DropZone {
+  trackNumber: number;
+  position: number;
+  insertionType: 'before' | 'after' | 'exact';
+  targetElementId?: string;
+  isValid: boolean;
+}
+
+const EDGE_SNAP_THRESHOLD = 18; // pixels for edge detection
+const POSITION_SNAP_THRESHOLD = 10; // pixels for position snapping
 
 export function TimelineTracks({
   allTrackNumbers,
@@ -38,9 +50,9 @@ export function TimelineTracks({
   const [dragState, setDragState] = useState({
     isDragging: false,
     draggedMediaFile: null as any,
-    dragOverTrack: null as number | null,
-    dropPosition: 0,
-    isValidDrop: false,
+    draggedElement: null as TimelineElement | null,
+    dragType: 'new' as 'new' | 'existing',
+    dropZone: null as DropZone | null,
     dragPreview: { x: 0, y: 0, visible: false }
   });
 
@@ -78,32 +90,119 @@ export function TimelineTracks({
     return Math.max(0, relativeX / pixelsPerSecond);
   };
 
-  const validateDrop = (mediaType: string, trackNumber: number, position: number, duration: number) => {
+  const findDropZone = (
+    trackNumber: number, 
+    position: number, 
+    mediaType: string, 
+    duration: number,
+    draggedElementId?: string
+  ): DropZone => {
     // Check track compatibility
     if (!isMediaTypeCompatibleWithTrack(mediaType, trackNumber)) {
-      return false;
+      return {
+        trackNumber,
+        position,
+        insertionType: 'exact',
+        isValid: false
+      };
     }
 
-    // Check for collisions
-    const elementsOnTrack = trackGroups[trackNumber] || [];
-    return !hasTimelineCollision({ startTime: position, duration }, elementsOnTrack);
+    const elementsOnTrack = (trackGroups[trackNumber] || [])
+      .filter(el => el.id !== draggedElementId) // Exclude the dragged element
+      .sort((a, b) => a.startTime - b.startTime);
+
+    if (elementsOnTrack.length === 0) {
+      return {
+        trackNumber,
+        position,
+        insertionType: 'exact',
+        isValid: true
+      };
+    }
+
+    // Find the best insertion point
+    for (const element of elementsOnTrack) {
+      const elementStart = element.startTime * pixelsPerSecond;
+      const elementEnd = (element.startTime + element.duration) * pixelsPerSecond;
+      const positionPx = position * pixelsPerSecond;
+
+      // Check if near the start edge
+      if (Math.abs(positionPx - elementStart) <= EDGE_SNAP_THRESHOLD) {
+        const insertPosition = element.startTime - duration;
+        if (insertPosition >= 0) {
+          // Check if there's space before this element
+          const prevElement = elementsOnTrack.find(el => 
+            el.startTime + el.duration <= element.startTime && 
+            el.startTime + el.duration > insertPosition
+          );
+          
+          if (!prevElement) {
+            return {
+              trackNumber,
+              position: Math.max(0, insertPosition),
+              insertionType: 'before',
+              targetElementId: element.id,
+              isValid: true
+            };
+          }
+        }
+      }
+
+      // Check if near the end edge
+      if (Math.abs(positionPx - elementEnd) <= EDGE_SNAP_THRESHOLD) {
+        const insertPosition = element.startTime + element.duration;
+        
+        // Check if there's space after this element
+        const nextElement = elementsOnTrack.find(el => 
+          el.startTime >= insertPosition && 
+          el.startTime < insertPosition + duration
+        );
+        
+        if (!nextElement) {
+          return {
+            trackNumber,
+            position: insertPosition,
+            insertionType: 'after',
+            targetElementId: element.id,
+            isValid: true
+          };
+        }
+      }
+    }
+
+    // Check for exact position placement (no collision)
+    const hasCollision = elementsOnTrack.some(element => {
+      const elementStart = element.startTime;
+      const elementEnd = element.startTime + element.duration;
+      const newStart = position;
+      const newEnd = position + duration;
+      
+      return (
+        (newStart >= elementStart && newStart < elementEnd) ||
+        (newEnd > elementStart && newEnd <= elementEnd) ||
+        (newStart <= elementStart && newEnd >= elementEnd)
+      );
+    });
+
+    return {
+      trackNumber,
+      position,
+      insertionType: 'exact',
+      isValid: !hasCollision
+    };
   };
 
   const parseDragData = (dataTransfer: DataTransfer) => {
     try {
       const jsonData = dataTransfer.getData('application/json');
       
-      // Check if we have valid JSON data
       if (!jsonData || jsonData.trim() === '') {
-        console.warn('No drag data available');
         return null;
       }
       
       const dragData = JSON.parse(jsonData);
       
-      // Validate the structure of drag data
-      if (!dragData || typeof dragData !== 'object' || !dragData.mediaFileId) {
-        console.warn('Invalid drag data structure:', dragData);
+      if (!dragData || typeof dragData !== 'object') {
         return null;
       }
       
@@ -120,34 +219,51 @@ export function TimelineTracks({
 
     const dragData = parseDragData(event.dataTransfer);
     if (!dragData) {
-      // Clear drag state if no valid data
       setDragState(prev => ({
         ...prev,
         isDragging: false,
-        draggedMediaFile: null,
-        dragOverTrack: null,
-        isValidDrop: false
+        dropZone: null
       }));
       return;
     }
 
-    const mediaFile = mediaFiles.find(file => file.id === dragData.mediaFileId);
-    if (!mediaFile) {
-      console.warn('Media file not found:', dragData.mediaFileId);
+    const position = calculateDropPosition(event, event.currentTarget as HTMLElement);
+    let dropZone: DropZone;
+    let draggedItem = null;
+    let dragType: 'new' | 'existing' = 'new';
+
+    // Check if it's an existing timeline element being dragged
+    if (dragData.timelineElementId) {
+      const element = timelineElements.find(el => el.id === dragData.timelineElementId);
+      if (element) {
+        draggedItem = element;
+        dragType = 'existing';
+        dropZone = findDropZone(trackNumber, position, element.type, element.duration, element.id);
+      } else {
+        return;
+      }
+    } else if (dragData.mediaFileId) {
+      // New media file from files panel
+      const mediaFile = mediaFiles.find(file => file.id === dragData.mediaFileId);
+      if (mediaFile) {
+        draggedItem = mediaFile;
+        dragType = 'new';
+        const duration = mediaFile.duration || 5;
+        dropZone = findDropZone(trackNumber, position, mediaFile.type, duration);
+      } else {
+        return;
+      }
+    } else {
       return;
     }
-
-    const position = calculateDropPosition(event, event.currentTarget as HTMLElement);
-    const duration = mediaFile.duration || 5;
-    const isValid = validateDrop(mediaFile.type, trackNumber, position, duration);
 
     setDragState(prev => ({
       ...prev,
       isDragging: true,
-      draggedMediaFile: mediaFile,
-      dragOverTrack: trackNumber,
-      dropPosition: position,
-      isValidDrop: isValid,
+      draggedMediaFile: dragType === 'new' ? draggedItem : null,
+      draggedElement: dragType === 'existing' ? draggedItem : null,
+      dragType,
+      dropZone,
       dragPreview: {
         x: event.clientX,
         y: event.clientY,
@@ -155,7 +271,6 @@ export function TimelineTracks({
       }
     }));
 
-    // Handle auto-scrolling
     handleAutoScrollMouseMove(event.nativeEvent);
   };
 
@@ -164,12 +279,10 @@ export function TimelineTracks({
     const x = event.clientX;
     const y = event.clientY;
     
-    // Only clear state if actually leaving the track
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       setDragState(prev => ({
         ...prev,
-        dragOverTrack: null,
-        isValidDrop: false
+        dropZone: null
       }));
     }
   };
@@ -179,57 +292,62 @@ export function TimelineTracks({
     stopAutoScroll();
 
     const dragData = parseDragData(event.dataTransfer);
-    if (!dragData) {
-      toast.error('Invalid drag operation');
-      setDragState(prev => ({ 
-        ...prev, 
-        isDragging: false, 
-        dragPreview: { ...prev.dragPreview, visible: false } 
-      }));
-      return;
-    }
-
-    if (!dragState.isValidDrop || !dragState.draggedMediaFile) {
+    if (!dragData || !dragState.dropZone?.isValid) {
       toast.error('Invalid drop location');
       setDragState(prev => ({ 
         ...prev, 
         isDragging: false, 
-        dragPreview: { ...prev.dragPreview, visible: false } 
+        dragPreview: { ...prev.dragPreview, visible: false },
+        dropZone: null
       }));
       return;
     }
 
     try {
-      const mediaFile = dragState.draggedMediaFile;
-      const position = dragState.dropPosition;
+      if (dragState.dragType === 'existing' && dragState.draggedElement) {
+        // Moving existing timeline element
+        const element = dragState.draggedElement;
+        const newStartTime = dragState.dropZone.position;
+        
+        // Update the element's position and track
+        actions.updateTimelineElement(element.id, {
+          startTime: newStartTime,
+          track: trackNumber
+        });
+        
+        toast.success(`${element.mediaFile?.name || 'Element'} repositioned`);
+      } else if (dragState.dragType === 'new' && dragState.draggedMediaFile) {
+        // Adding new media file
+        const mediaFile = dragState.draggedMediaFile;
+        const newStartTime = dragState.dropZone.position;
 
-      // Create new timeline element
-      const newElement: TimelineElement = {
-        id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: mediaFile.type,
-        startTime: position,
-        duration: mediaFile.duration || 5,
-        track: trackNumber,
-        mediaFile,
-        properties: {
-          volume: (mediaFile.type === 'audio' || mediaFile.type === 'video') ? 1 : undefined
-        }
-      };
+        const newElement: TimelineElement = {
+          id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: mediaFile.type,
+          startTime: newStartTime,
+          duration: mediaFile.duration || 5,
+          track: trackNumber,
+          mediaFile,
+          properties: {
+            volume: (mediaFile.type === 'audio' || mediaFile.type === 'video') ? 1 : undefined
+          }
+        };
 
-      actions.addTimelineElement(newElement);
-      actions.setSelectedElement(newElement.id);
-      
-      toast.success(`${mediaFile.name} added to timeline`);
+        actions.addTimelineElement(newElement);
+        actions.setSelectedElement(newElement.id);
+        
+        toast.success(`${mediaFile.name} added to timeline`);
+      }
     } catch (error) {
       console.error('Error handling drop:', error);
-      toast.error('Failed to add media to timeline');
+      toast.error('Failed to process drop operation');
     } finally {
       setDragState({
         isDragging: false,
         draggedMediaFile: null,
-        dragOverTrack: null,
-        dropPosition: 0,
-        isValidDrop: false,
+        draggedElement: null,
+        dragType: 'new',
+        dropZone: null,
         dragPreview: { x: 0, y: 0, visible: false }
       });
     }
@@ -240,9 +358,9 @@ export function TimelineTracks({
     setDragState({
       isDragging: false,
       draggedMediaFile: null,
-      dragOverTrack: null,
-      dropPosition: 0,
-      isValidDrop: false,
+      draggedElement: null,
+      dragType: 'new',
+      dropZone: null,
       dragPreview: { x: 0, y: 0, visible: false }
     });
   };
@@ -264,17 +382,6 @@ export function TimelineTracks({
     }
   };
 
-  const getDropIndicatorPosition = () => {
-    if (!dragState.dragOverTrack || !dragState.isDragging) return null;
-    
-    return {
-      left: `${dragState.dropPosition * pixelsPerSecond}px`,
-      trackNumber: dragState.dragOverTrack
-    };
-  };
-
-  const dropIndicator = getDropIndicatorPosition();
-
   return (
     <>
       <div ref={tracksRef} className="relative z-20">
@@ -282,8 +389,8 @@ export function TimelineTracks({
           <div 
             key={trackNumber} 
             className={`h-12 bg-muted/20 border-b border-border relative transition-all duration-200 ${
-              dragState.dragOverTrack === trackNumber 
-                ? dragState.isValidDrop 
+              dragState.dropZone?.trackNumber === trackNumber 
+                ? dragState.dropZone.isValid 
                   ? 'bg-green-500/10 border-green-500/30 shadow-inner' 
                   : 'bg-red-500/10 border-red-500/30 shadow-inner'
                 : 'hover:bg-muted/30'
@@ -293,36 +400,13 @@ export function TimelineTracks({
             onDrop={(e) => handleDrop(e, trackNumber)}
           >
             {/* Drop zone indicator */}
-            {dragState.dragOverTrack === trackNumber && dragState.isDragging && (
-              <>
-                <div className={`absolute inset-0 border-2 border-dashed pointer-events-none z-10 ${
-                  dragState.isValidDrop ? 'border-green-500/50' : 'border-red-500/50'
-                }`}>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                      dragState.isValidDrop 
-                        ? 'bg-green-500/20 text-green-700 dark:text-green-300' 
-                        : 'bg-red-500/20 text-red-700 dark:text-red-300'
-                    }`}>
-                      {dragState.isValidDrop 
-                        ? `Drop to add to ${getTrackLabel(trackNumber)}` 
-                        : `Cannot drop ${dragState.draggedMediaFile?.type} here`
-                      }
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Position indicator line */}
-                {dragState.isValidDrop && dropIndicator && dropIndicator.trackNumber === trackNumber && (
-                  <div
-                    className="absolute top-0 w-0.5 h-full bg-green-500 z-20 pointer-events-none"
-                    style={{ left: dropIndicator.left }}
-                  >
-                    <div className="absolute -top-1 -left-1 w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-                )}
-              </>
+            {dragState.dropZone?.trackNumber === trackNumber && dragState.isDragging && (
+              <TimelineDropIndicator
+                dropZone={dragState.dropZone}
+                pixelsPerSecond={pixelsPerSecond}
+                trackLabel={getTrackLabel(trackNumber)}
+                draggedItem={dragState.draggedMediaFile || dragState.draggedElement}
+              />
             )}
             
             {/* Existing timeline elements */}
@@ -338,6 +422,7 @@ export function TimelineTracks({
                 isSelected={selectedElementId === element.id}
                 allElements={timelineElements}
                 zoom={zoom}
+                isDraggedElement={dragState.draggedElement?.id === element.id}
               />
             ))}
           </div>
@@ -345,14 +430,16 @@ export function TimelineTracks({
       </div>
 
       {/* Drag Preview */}
-      {dragState.dragPreview.visible && dragState.draggedMediaFile && (
+      {dragState.dragPreview.visible && (dragState.draggedMediaFile || dragState.draggedElement) && (
         <DragPreview
-          mediaFile={dragState.draggedMediaFile}
+          mediaFile={dragState.draggedMediaFile || (dragState.draggedElement?.mediaFile)}
+          element={dragState.draggedElement}
           x={dragState.dragPreview.x}
           y={dragState.dragPreview.y}
-          width={(dragState.draggedMediaFile.duration || 5) * pixelsPerSecond}
+          width={((dragState.draggedMediaFile?.duration || dragState.draggedElement?.duration || 5) * pixelsPerSecond)}
           visible={dragState.dragPreview.visible}
-          isValidDrop={dragState.isValidDrop}
+          isValidDrop={dragState.dropZone?.isValid || false}
+          dragType={dragState.dragType}
         />
       )}
     </>

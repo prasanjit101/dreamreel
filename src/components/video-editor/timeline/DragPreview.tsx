@@ -1,31 +1,45 @@
 "use client";
 
 import React from 'react';
-import { MediaFile } from '@/lib/store/video-editor-store.types';
+import { MediaFile, TimelineElement } from '@/lib/store/video-editor-store.types';
 import { getClipIcon, getClipColor } from '@/utils/timelineUtils';
 import { formatDuration } from '@/utils/mediaUtils';
 
 interface DragPreviewProps {
-  mediaFile: MediaFile;
+  mediaFile?: MediaFile;
+  element?: TimelineElement;
   x: number;
   y: number;
   width: number;
   visible: boolean;
   isValidDrop: boolean;
+  dragType: 'new' | 'existing';
 }
 
 export const DragPreview: React.FC<DragPreviewProps> = ({
   mediaFile,
+  element,
   x,
   y,
   width,
   visible,
-  isValidDrop
+  isValidDrop,
+  dragType
 }) => {
   if (!visible) return null;
 
-  const IconComponent = getClipIcon(mediaFile.type);
-  const clipColor = getClipColor(mediaFile.type);
+  // Determine the item to display
+  const displayItem = element || mediaFile;
+  if (!displayItem) return null;
+
+  const itemType = element?.type || mediaFile?.type;
+  const itemName = element?.mediaFile?.name || element?.properties?.text || mediaFile?.name || 'Unknown';
+  const itemDuration = element?.duration || mediaFile?.duration;
+
+  if (!itemType) return null;
+
+  const IconComponent = getClipIcon(itemType);
+  const clipColor = getClipColor(itemType);
 
   return (
     <div
@@ -47,20 +61,26 @@ export const DragPreview: React.FC<DragPreviewProps> = ({
             ? 'border-white/50 shadow-green-500/20' 
             : 'border-red-500/50 shadow-red-500/20 opacity-60'
           }
+          ${dragType === 'existing' ? 'ring-2 ring-blue-400/50' : ''}
         `}
         style={{ height: '40px' }}
       >
         <div className="flex items-center gap-2 text-white text-sm truncate flex-1 min-w-0">
           <IconComponent className="w-4 h-4 flex-shrink-0" />
           <span className="truncate font-medium">
-            {mediaFile.name}
+            {itemName}
           </span>
-          {mediaFile.duration && (
+          {itemDuration && (
             <span className="text-white/70 text-xs ml-auto flex-shrink-0">
-              {formatDuration(mediaFile.duration)}
+              {formatDuration(itemDuration)}
             </span>
           )}
         </div>
+        
+        {/* Drag type indicator */}
+        {dragType === 'existing' && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border border-white/50" />
+        )}
       </div>
       
       {/* Drop indicator */}
