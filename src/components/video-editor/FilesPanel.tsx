@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Play, GripVertical } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
 import { useDragAndDrop } from '@/hooks/use-drag-and-drop';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /**
  * FilesPanel Component
@@ -113,9 +114,18 @@ export function FilesPanel() {
                           file.type === 'audio' ? 'bg-green-500' :
                           'bg-purple-500'
                         }`} />
-                        <h4 className="text-foreground text-sm font-medium truncate">
-                          {file.name}
-                        </h4>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <h4 className="text-foreground text-xs font-medium max-w-[95px] truncate">
+                                {file.name}
+                              </h4>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="max-w-xs break-words">
+                              {file.name}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                       
                       <div className="text-xs text-muted-foreground space-y-1">
