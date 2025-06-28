@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Download, FolderOpen, Share } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { MediaUploader } from './MediaUploader';
+import { ExportButton } from './ExportButton';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
+import { convertEditorDataToExportData, validateExportData } from '@/utils/exportUtils';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth-client';
 import Link from "next/link";
@@ -21,16 +23,6 @@ export function Navbar() {
   const { data: session } = useSession();
   const user = session?.user;
 
-  const handleExport = () => {
-    if (timelineElements.length === 0) {
-      toast.error('No media to export. Please add some media files first.');
-      return;
-    }
-    
-    // TODO: Implement actual export functionality with Remotion
-    toast.info('Export functionality will be implemented with Remotion rendering');
-  };
-
   const handleShare = () => {
     if (timelineElements.length === 0) {
       toast.error('No media to share. Please add some media files first.');
@@ -40,6 +32,27 @@ export function Navbar() {
     // TODO: Implement share functionality
     toast.info('Share functionality coming soon');
   };
+
+  // Prepare export data - simplified approach
+  const exportData = {
+    clips: timelineElements.map(element => ({
+      id: element.id,
+      type: element.type,
+      startTime: element.startTime,
+      endTime: element.startTime + element.duration,
+      duration: element.duration,
+      src: undefined, // Will be populated based on actual element properties
+      content: undefined,
+      trackId: element.track?.toString() || element.id,
+    })),
+    aspectRatio: '16:9', // Default - should come from project settings
+    fps: 30, // Default - should come from project settings
+    duration: duration,
+    title: 'New project',
+    description: undefined,
+  };
+
+  const hasValidContent = timelineElements.length > 0;
 
   return (
     <div className="h-14 bg-card border-b border-border flex items-center justify-between px-4">
@@ -59,15 +72,10 @@ export function Navbar() {
 
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleExport}
-          disabled={timelineElements.length === 0}
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Export
-        </Button>
+        <ExportButton
+          exportData={exportData}
+          disabled={!hasValidContent}
+        />
 
         <ThemeToggle />
 

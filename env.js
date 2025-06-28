@@ -22,6 +22,10 @@ export const env = createEnv({
     AWS_SESSION_TOKEN: z.string(),
     BACKBLAZE_ENDPOINT: z.string(),
     BACKBLAZE_REGION: z.string(),
+    // Remotion Lambda environment variables
+    REMOTION_LAMBDA_REGION: z.string(),
+    REMOTION_LAMBDA_FUNCTION_NAME: z.string(),
+    REMOTION_LAMBDA_SERVE_URL: z.string(),
   },
 
   /**
@@ -52,6 +56,9 @@ export const env = createEnv({
     AWS_SESSION_TOKEN: process.env.AWS_SESSION_TOKEN,
     BACKBLAZE_ENDPOINT: process.env.BACKBLAZE_ENDPOINT,
     BACKBLAZE_REGION: process.env.BACKBLAZE_REGION,
+    REMOTION_LAMBDA_REGION: process.env.REMOTION_LAMBDA_REGION,
+    REMOTION_LAMBDA_FUNCTION_NAME: process.env.REMOTION_LAMBDA_FUNCTION_NAME,
+    REMOTION_LAMBDA_SERVE_URL: process.env.REMOTION_LAMBDA_SERVE_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
