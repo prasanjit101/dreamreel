@@ -35,6 +35,7 @@ import { ImageConfigForm } from '@/components/video-editor/track-config-forms/Im
 import { TextConfigForm } from '@/components/video-editor/track-config-forms/TextConfigForm';
 import { VideoEditorState, TimelineElement, MediaFile } from '@/lib/store/video-editor-store.types';
 import { formatDuration } from '@/utils/mediaUtils';
+import { toast } from 'sonner';
 
 interface TimelineControlsProps {
   isPlaying: boolean;
@@ -103,6 +104,7 @@ export function TimelineControls({
   const handleDeleteSelected = () => {
     if (selectedElementId) {
       actions.removeTimelineElement(selectedElementId);
+      toast.success('Element deleted successfully');
     }
   };
 
@@ -116,8 +118,76 @@ export function TimelineControls({
           startTime: element.startTime + element.duration
         };
         actions.addTimelineElement(newElement);
+        toast.success('Element copied successfully');
       }
     }
+  };
+
+  const handleSplit = () => {
+    // Check if an element is selected
+    if (!selectedElementId) {
+      toast.error('Please select a timeline element to split');
+      return;
+    }
+
+    // Find the selected element
+    const selectedElement = timelineElements.find(el => el.id === selectedElementId);
+    if (!selectedElement) {
+      toast.error('Selected element not found');
+      return;
+    }
+
+    // Check if the playhead is within the bounds of the selected element
+    const elementStart = selectedElement.startTime;
+    const elementEnd = selectedElement.startTime + selectedElement.duration;
+    
+    if (currentTime < elementStart || currentTime > elementEnd) {
+      toast.error('Playhead must be positioned over the selected element to split it');
+      return;
+    }
+
+    // Calculate the split point relative to the element's start
+    const splitPoint = currentTime - elementStart;
+    
+    // Validate that the split point creates meaningful clips (minimum 0.1 seconds each)
+    const minDuration = 0.1;
+    if (splitPoint < minDuration || (selectedElement.duration - splitPoint) < minDuration) {
+      toast.error('Split point is too close to the beginning or end of the clip');
+      return;
+    }
+
+    // Create the first part (from start to split point)
+    const firstPart: TimelineElement = {
+      ...selectedElement,
+      id: `${selectedElement.id}_split1_${Date.now()}`,
+      duration: splitPoint
+    };
+
+    // Create the second part (from split point to end)
+    const secondPart: TimelineElement = {
+      ...selectedElement,
+      id: `${selectedElement.id}_split2_${Date.now()}`,
+      startTime: currentTime,
+      duration: selectedElement.duration - splitPoint
+    };
+
+    // Remove the original element and add the two new parts
+    actions.removeTimelineElement(selectedElement.id);
+    actions.addTimelineElement(firstPart);
+    actions.addTimelineElement(secondPart);
+
+    // Select the first part for continuity
+    actions.setSelectedElement(firstPart.id);
+
+    toast.success(`Element split into two parts at ${formatDuration(currentTime)}`);
+  };
+
+  const handleAddTrackClick = (trackType: 'audio' | 'video' | 'image' | 'text') => {
+    setSelectedTrackType(trackType);
+    setCurrentConfig({});
+    setCurrentFile(undefined);
+    setDialogOpen(true);
+    setDropdownOpen(false);
   };
 
   const handleConfigChange = (config: any) => {
@@ -159,7 +229,16 @@ export function TimelineControls({
 
     actions.addTimelineElement(newElement);
     setDialogOpen(false);
+    toast.success(`${selectedTrackType} track added successfully`);
   };
+
+  // Check if split is possible
+  const selectedElement = selectedElementId ? timelineElements.find(el => el.id === selectedElementId) : null;
+  const canSplit = selectedElement && 
+    currentTime >= selectedElement.startTime && 
+    currentTime <= selectedElement.startTime + selectedElement.duration &&
+    currentTime - selectedElement.startTime >= 0.1 &&
+    selectedElement.startTime + selectedElement.duration - currentTime >= 0.1;
 
   return (
     <div className="h-16 bg-muted border-b border-border flex items-center justify-between px-4">
@@ -212,13 +291,46 @@ export function TimelineControls({
           <ZoomIn className="w-4 h-4" />
         </Button>
 
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground p-2"
+              title="Add Track"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleAddTrackClick('audio')}>
+              Audio
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddTrackClick('video')}>
+              Video
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddTrackClick('image')}>
+              Image
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddTrackClick('text')}>
+              Text
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button
           variant="ghost"
           size="sm"
-          className="text-muted-foreground hover:text-foreground p-2"
-          onClick={() => {
-            console.log('The video will be split at the current playhead position');
-          }}
+          onClick={handleSplit}
+          disabled={!canSplit}
+          className="text-muted-foreground hover:text-foreground p-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={
+            !selectedElementId 
+              ? "Select an element to split" 
+              : !canSplit 
+                ? "Position playhead over the selected element to split" 
+                : "Split element at playhead position"
+          }
         >
           <Scissors className="w-4 h-4 rotate-90" />
         </Button>
@@ -230,6 +342,7 @@ export function TimelineControls({
               size="sm"
               onClick={handleCopySelected}
               className="text-muted-foreground hover:text-foreground p-2"
+              title="Copy selected element"
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -239,6 +352,7 @@ export function TimelineControls({
               size="sm"
               onClick={handleDeleteSelected}
               className="text-muted-foreground hover:text-red-500 p-2"
+              title="Delete selected element"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
