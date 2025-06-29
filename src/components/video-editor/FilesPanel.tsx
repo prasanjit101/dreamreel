@@ -1,13 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
-import { Trash2, Play, GripVertical, Plus } from 'lucide-react';
+import { Trash2, Play, GripVertical, Plus, Volume2 } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ElevenLabsTTSModal } from './ElevenLabsTTSModal';
 
 /**
  * FilesPanel Component
@@ -19,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
  */
 export function FilesPanel() {
   const { mediaFiles, actions } = useVideoEditorStore();
+  const [isTTSModalOpen, setIsTTSModalOpen] = useState(false);
 
   const handleAddToTimeline = (mediaFile: any) => {
     // Determine track based on media type
@@ -92,10 +100,30 @@ export function FilesPanel() {
           <h3 className="text-foreground font-medium text-sm">Project Files</h3>
         <div className="flex items-center gap-2">
           <MediaUploader variant="button" className="h-8 text-xs" />
-          <Button variant="outline" size="icon" className="h-8 text-xs">
-            {/* this button will open a modal where the user can generate video, audio, image or text */}
-            <Plus className="w-3 h-3" />
-          </Button>
+          
+          {/* Enhanced Plus Button with Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 text-xs">
+                <Plus className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsTTSModalOpen(true)}>
+                <Volume2 className="w-4 h-4 mr-2" />
+                Generate Audio (Eleven Labs)
+              </DropdownMenuItem>
+              {/* Future options can be added here */}
+              <DropdownMenuItem disabled>
+                <Plus className="w-4 h-4 mr-2" />
+                Generate Video (Coming Soon)
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <Plus className="w-4 h-4 mr-2" />
+                Generate Image (Coming Soon)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         </div>
         
@@ -180,6 +208,12 @@ export function FilesPanel() {
             ))}
           </div>
         )}
+
+        {/* Eleven Labs TTS Modal */}
+        <ElevenLabsTTSModal 
+          open={isTTSModalOpen} 
+          onOpenChange={setIsTTSModalOpen} 
+        />
     </div>
   );
 }

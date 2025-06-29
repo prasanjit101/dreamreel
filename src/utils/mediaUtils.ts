@@ -46,6 +46,44 @@ export function createMediaFile(file: File): Promise<MediaFile> {
 }
 
 /**
+ * Creates a MediaFile object from an audio blob (e.g., from TTS generation)
+ */
+export function createMediaFileFromBlob(
+  blob: Blob, 
+  filename: string, 
+  mimeType: string = 'audio/mpeg'
+): Promise<MediaFile> {
+  return new Promise((resolve, reject) => {
+    // Create a File object from the blob
+    const file = new File([blob], filename, { type: mimeType });
+    const url = URL.createObjectURL(file);
+    const id = `media_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const mediaFile: MediaFile = {
+      id,
+      name: filename,
+      type: 'audio', // Always audio for TTS-generated content
+      url,
+      file
+    };
+
+    // Get duration for the audio file
+    const audioElement = document.createElement('audio');
+    audioElement.src = url;
+    audioElement.preload = 'metadata';
+    
+    audioElement.onloadedmetadata = () => {
+      mediaFile.duration = audioElement.duration;
+      resolve(mediaFile);
+    };
+    
+    audioElement.onerror = () => {
+      reject(new Error('Failed to load generated audio metadata'));
+    };
+  });
+}
+
+/**
  * Determines the media type from a file
  */
 export function getMediaType(file: File): 'video' | 'audio' | 'image' {
