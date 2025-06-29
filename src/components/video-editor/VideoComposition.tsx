@@ -84,26 +84,16 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, currentTime 
         {element.type === 'image' && element.mediaFile && (
           <Img
             src={element.mediaFile.url}
-            {...commonProps}
+            style={{
+              ...commonProps.style,
+              transform: `translate(${element.properties?.x || 0}px, ${element.properties?.y || 0}px) scale(${element.properties?.scale || 1}) rotate(${element.properties?.rotation || 0}deg)`,
+              opacity: element.properties?.opacity || 1,
+            }}
           />
         )}
         
         {element.type === 'text' && (
-          <AbsoluteFill
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: element.properties?.fontSize || 48,
-              color: element.properties?.color || '#ffffff',
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              padding: '20px',
-            }}
-          >
-            {element.properties?.text || 'Sample Text'}
-          </AbsoluteFill>
+          <TextRenderer element={element} />
         )}
 
         {element.type === 'subtitle' && element.properties?.subtitleEntries && (
@@ -115,6 +105,62 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, currentTime 
         )}
       </AbsoluteFill>
     </Sequence>
+  );
+};
+
+interface TextRendererProps {
+  element: TimelineElement;
+}
+
+const TextRenderer: React.FC<TextRendererProps> = ({ element }) => {
+  const getPositionStyles = () => {
+    const baseStyles = {
+      position: 'absolute' as const,
+      left: 0,
+      right: 0,
+      padding: '20px',
+      display: 'flex',
+      justifyContent: element.properties?.alignment === 'left' ? 'flex-start' : 
+                     element.properties?.alignment === 'right' ? 'flex-end' : 'center',
+    };
+
+    switch (element.properties?.position) {
+      case 'top':
+        return { ...baseStyles, top: 0, alignItems: 'flex-start' };
+      case 'bottom':
+        return { ...baseStyles, bottom: 0, alignItems: 'flex-end' };
+      case 'center':
+      default:
+        return { ...baseStyles, top: '50%', transform: 'translateY(-50%)', alignItems: 'center' };
+    }
+  };
+
+  return (
+    <AbsoluteFill>
+      <div style={getPositionStyles()}>
+        <div
+          style={{
+            fontSize: `${element.properties?.fontSize || 48}px`,
+            fontFamily: element.properties?.fontFamily || 'Arial',
+            color: element.properties?.color || '#ffffff',
+            backgroundColor: element.properties?.backgroundColor || 'transparent',
+            padding: element.properties?.backgroundColor && element.properties.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '8px 16px' : '0',
+            borderRadius: element.properties?.backgroundColor && element.properties.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '4px' : '0',
+            textAlign: element.properties?.alignment || 'center',
+            lineHeight: 1.2,
+            maxWidth: '80%',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            fontWeight: 'bold',
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', // Add text shadow for better readability
+            transform: `translate(${element.properties?.x || 0}px, ${element.properties?.y || 0}px) scale(${element.properties?.scale || 1}) rotate(${element.properties?.rotation || 0}deg)`,
+            opacity: element.properties?.opacity || 1,
+          }}
+        >
+          {element.properties?.text || 'Sample Text'}
+        </div>
+      </div>
+    </AbsoluteFill>
   );
 };
 

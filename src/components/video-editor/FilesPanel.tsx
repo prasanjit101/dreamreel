@@ -5,7 +5,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
-import { Trash2, Play, GripVertical, Plus, Volume2, Edit } from 'lucide-react';
+import { Trash2, Play, GripVertical, Plus, Volume2, Edit, Type } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -17,6 +17,7 @@ import {
 import { ElevenLabsTTSModal } from './ElevenLabsTTSModal';
 import { SubtitleEditorModal } from './SubtitleEditorModal';
 import { ImageModal } from './ImageModal';
+import { TextCreationModal } from './TextCreationModal';
 import { TimelineElement } from '@/lib/store/video-editor-store.types';
 
 /**
@@ -31,6 +32,7 @@ export function FilesPanel() {
   const { mediaFiles, actions, aspectRatio } = useVideoEditorStore();
   const [isTTSModalOpen, setIsTTSModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [subtitleEditModal, setSubtitleEditModal] = useState<{
     open: boolean;
     mediaFile: any;
@@ -166,18 +168,18 @@ export function FilesPanel() {
                 <Volume2 className="w-4 h-4 mr-2" />
                 Generate Audio (Eleven Labs)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { }}>
-                <Volume2 className="w-4 h-4 mr-2" />
-                Add text
+              <DropdownMenuItem onClick={() => setIsTextModalOpen(true)}>
+                <Type className="w-4 h-4 mr-2" />
+                Add Text
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsImageModalOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Generate Image (Gemini)
               </DropdownMenuItem>
               {/* Future options can be added here */}
               <DropdownMenuItem disabled>
                 <Plus className="w-4 h-4 mr-2" />
                 Generate Video (Coming Soon)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsImageModalOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Generate Image (Gemini)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -292,6 +294,12 @@ export function FilesPanel() {
         <ElevenLabsTTSModal 
           open={isTTSModalOpen} 
           onOpenChange={setIsTTSModalOpen} 
+        />
+
+        {/* Text Creation Modal */}
+        <TextCreationModal
+          open={isTextModalOpen}
+          onOpenChange={setIsTextModalOpen}
         />
 
         {/* Subtitle Editor Modal */}
