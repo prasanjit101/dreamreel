@@ -12,7 +12,8 @@ import {
   ZoomOut,
   Trash2,
   Copy,
-  Plus
+  Plus,
+  Scissors
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -211,24 +212,16 @@ export function TimelineControls({
           <ZoomIn className="w-4 h-4" />
         </Button>
 
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground p-2"
-              title="Add Track"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Audio</DropdownMenuItem>
-            <DropdownMenuItem>Video</DropdownMenuItem>
-            <DropdownMenuItem>Image</DropdownMenuItem>
-            <DropdownMenuItem>Text</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground p-2"
+          onClick={() => {
+            console.log('The video will be split at the current playhead position');
+          }}
+        >
+          <Scissors className="w-4 h-4 rotate-90" />
+        </Button>
 
         {selectedElementId && (
           <>
