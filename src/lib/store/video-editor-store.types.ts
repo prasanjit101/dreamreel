@@ -1,4 +1,3 @@
-
 export interface MediaFile {
     id: string;
     name: string;
@@ -50,6 +49,9 @@ export interface VideoEditorState {
     timelineElements: TimelineElement[];
     selectedElementId: string | null;
 
+    // Project settings
+    aspectRatio: string;
+
     // UI state
     isFileLoaded: boolean;
     activeSidebarTab: SidebarTab;
@@ -74,6 +76,9 @@ export interface VideoEditorState {
         updateTimelineElement: (id: string, updates: Partial<TimelineElement>) => void;
         removeTimelineElement: (id: string) => void;
         setSelectedElement: (id: string | null) => void;
+
+        // Project settings
+        setAspectRatio: (aspectRatio: string) => void;
 
         // UI management
         setActiveSidebarTab: (tab: SidebarTab) => void;

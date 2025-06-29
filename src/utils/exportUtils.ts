@@ -87,6 +87,11 @@ export function validateExportData(editorState: EditorState): { isValid: boolean
         errors.push(`${invalidClips.length} clips have invalid properties`);
     }
 
+    // Validate aspect ratio format
+    if (editorState.aspectRatio && !editorState.aspectRatio.match(/^\d+:\d+$/)) {
+        errors.push('Invalid aspect ratio format (should be width:height, e.g., 16:9)');
+    }
+
     return {
         isValid: errors.length === 0,
         errors,
@@ -125,4 +130,32 @@ export function getExportSummary(exportData: VideoExportData): {
         hasImages: clipTypes.includes('image'),
         hasText: clipTypes.includes('text'),
     };
-} 
+}
+
+/**
+ * Calculates composition dimensions based on aspect ratio
+ * Used for consistent dimension calculation across the app
+ */
+export function calculateCompositionDimensions(aspectRatio: string): { width: number; height: number } {
+    const maxDimension = 1920; // Maximum width or height
+    const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+    
+    if (!widthRatio || !heightRatio) {
+        // Fallback to 16:9 if aspect ratio is invalid
+        return { width: 1920, height: 1080 };
+    }
+    
+    const ratio = widthRatio / heightRatio;
+    
+    if (ratio >= 1) {
+        // Landscape or square - limit by width
+        const width = maxDimension;
+        const height = Math.round(width / ratio);
+        return { width, height };
+    } else {
+        // Portrait - limit by height
+        const height = maxDimension;
+        const width = Math.round(height * ratio);
+        return { width, height };
+    }
+}

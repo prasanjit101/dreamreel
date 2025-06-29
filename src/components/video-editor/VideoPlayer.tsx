@@ -6,6 +6,34 @@ import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { VideoComposition } from './VideoComposition';
 import { MediaUploader } from './MediaUploader';
 
+/**
+ * Calculates composition dimensions based on aspect ratio
+ * Maintains a maximum dimension while preserving aspect ratio
+ */
+function calculateCompositionDimensions(aspectRatio: string): { width: number; height: number } {
+  const maxDimension = 1920; // Maximum width or height
+  const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+  
+  if (!widthRatio || !heightRatio) {
+    // Fallback to 16:9 if aspect ratio is invalid
+    return { width: 1920, height: 1080 };
+  }
+  
+  const ratio = widthRatio / heightRatio;
+  
+  if (ratio >= 1) {
+    // Landscape or square - limit by width
+    const width = maxDimension;
+    const height = Math.round(width / ratio);
+    return { width, height };
+  } else {
+    // Portrait - limit by height
+    const height = maxDimension;
+    const width = Math.round(height * ratio);
+    return { width, height };
+  }
+}
+
 export default function VideoPlayer() {
   const playerRef = useRef<PlayerRef>(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -18,6 +46,7 @@ export default function VideoPlayer() {
     volume, 
     isFileLoaded,
     timelineElements,
+    aspectRatio,
     actions 
   } = useVideoEditorStore();
 
@@ -26,6 +55,9 @@ export default function VideoPlayer() {
     playerRef.current = instance;
     setIsPlayerReady(!!instance);
   };
+
+  // Calculate composition dimensions based on aspect ratio
+  const { width: compositionWidth, height: compositionHeight } = calculateCompositionDimensions(aspectRatio);
 
   // Calculate composition duration in frames (30 fps)
   const durationInFrames = Math.max(Math.floor(duration * 30), 30);
@@ -138,8 +170,8 @@ export default function VideoPlayer() {
             ref={setPlayerRef}
             component={VideoComposition}
             durationInFrames={durationInFrames}
-            compositionWidth={1920}
-            compositionHeight={1080}
+            compositionWidth={compositionWidth}
+            compositionHeight={compositionHeight}
             fps={30}
             style={{ 
               width: '100%', 
@@ -160,6 +192,9 @@ export default function VideoPlayer() {
               <div className="text-lg font-medium">Player Ready</div>
               <div className="text-sm text-white/70">
                 Add media files to the timeline to start editing
+              </div>
+              <div className="text-xs text-white/50">
+                Current aspect ratio: {aspectRatio} ({compositionWidth}×{compositionHeight})
               </div>
             </div>
           </div>

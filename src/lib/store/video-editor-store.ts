@@ -13,6 +13,7 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
   selectedElementId: null,
   isFileLoaded: false,
   activeSidebarTab: 'files',
+  aspectRatio: '16:9', // Default aspect ratio
   
   actions: {
     // Playback controls
@@ -114,6 +115,9 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
     
     setSelectedElement: (id: string | null) => set({ selectedElementId: id }),
     
+    // Project settings
+    setAspectRatio: (aspectRatio: string) => set({ aspectRatio }),
+    
     // UI management
     setActiveSidebarTab: (tab: SidebarTab) => set({ activeSidebarTab: tab }),
     
@@ -127,7 +131,8 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
       timelineElements: [],
       selectedElementId: null,
       isFileLoaded: false,
-      activeSidebarTab: 'files'
+      activeSidebarTab: 'files',
+      aspectRatio: '16:9' // Reset to default aspect ratio
     })
   }
 }));

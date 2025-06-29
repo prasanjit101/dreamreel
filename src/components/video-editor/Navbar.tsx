@@ -7,6 +7,7 @@ import { Download, FolderOpen, Share } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { MediaUploader } from './MediaUploader';
 import { ExportButton } from './ExportButton';
+import { SearchableSelect, type Option } from '@/components/searchable-select';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { convertEditorDataToExportData, validateExportData } from '@/utils/exportUtils';
 import { toast } from 'sonner';
@@ -17,9 +18,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SignOutBtn } from '../SignOutBtn';
 import { Logo } from '../Logo';
 
+// Define aspect ratio options
+const aspectRatioOptions: Option[] = [
+  { value: '16:9', label: '16:9 (Landscape)' },
+  { value: '9:16', label: '9:16 (Portrait)' },
+  { value: '1:1', label: '1:1 (Square)' },
+  { value: '4:3', label: '4:3 (Standard)' },
+  { value: '3:4', label: '3:4 (Portrait)' },
+  { value: '21:9', label: '21:9 (Ultrawide)' },
+  { value: '2:3', label: '2:3 (Portrait)' },
+  { value: '3:2', label: '3:2 (Landscape)' },
+];
 
 export function Navbar() {
-  const { timelineElements, duration } = useVideoEditorStore();
+  const { timelineElements, duration, aspectRatio, actions } = useVideoEditorStore();
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -31,6 +43,11 @@ export function Navbar() {
     
     // TODO: Implement share functionality
     toast.info('Share functionality coming soon');
+  };
+
+  const handleAspectRatioChange = (newAspectRatio: string) => {
+    actions.setAspectRatio(newAspectRatio);
+    toast.success(`Aspect ratio changed to ${newAspectRatio}`);
   };
 
   // Prepare export data - simplified approach
@@ -45,7 +62,7 @@ export function Navbar() {
       content: undefined,
       trackId: element.track?.toString() || element.id,
     })),
-    aspectRatio: '16:9', // Default - should come from project settings
+    aspectRatio: aspectRatio, // Use aspect ratio from store
     fps: 30, // Default - should come from project settings
     duration: duration,
     title: 'New project',
@@ -61,13 +78,27 @@ export function Navbar() {
         <Logo />
       </div>
 
-      {/* Center section - Project name */}
-      <div className="flex-1 max-w-md mx-8">
-        <Input 
-          value="New project"
-          className="bg-transparent border-none text-center text-foreground focus:bg-muted focus:border-border"
-          readOnly
-        />
+      {/* Center section - Project name and aspect ratio */}
+      <div className="flex-1 max-w-2xl mx-8 flex items-center gap-4">
+        <div className="flex-1 max-w-md">
+          <Input 
+            value="New project"
+            className="bg-transparent border-none text-center text-foreground focus:bg-muted focus:border-border"
+            readOnly
+          />
+        </div>
+        
+        {/* Aspect Ratio Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">Aspect Ratio:</span>
+          <SearchableSelect
+            options={aspectRatioOptions}
+            value={aspectRatio}
+            onValueChange={handleAspectRatioChange}
+            placeholder="Select aspect ratio"
+            className="w-40"
+          />
+        </div>
       </div>
 
       {/* Right section - Actions */}
