@@ -330,6 +330,52 @@ export function PropertiesPanel({ className }: { className?: string }) {
                   />
                 </div>
               </div>
+
+              {/* Opacity Control */}
+              <div className="space-y-3">
+                <Label className="text-xs font-medium">Opacity</Label>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="opacity-slider" className="text-xs">Opacity</Label>
+                    <span className="text-xs text-muted-foreground min-w-[40px]">
+                      {Math.round((selectedElement.properties?.opacity || 1) * 100)}%
+                    </span>
+                  </div>
+                  <Slider
+                    id="opacity-slider"
+                    value={[(selectedElement.properties?.opacity || 1) * 100]}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                    onValueChange={(values) => handlePropertyChange('opacity', values[0] / 100)}
+                  />
+                </div>
+              </div>
+
+              {/* Rotation Control */}
+              <div className="space-y-3">
+                <Label className="text-xs font-medium">Rotation</Label>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="rotation-slider" className="text-xs">Rotation</Label>
+                    <span className="text-xs text-muted-foreground min-w-[40px]">
+                      {selectedElement.properties?.rotation || 0}°
+                    </span>
+                  </div>
+                  <Slider
+                    id="rotation-slider"
+                    value={[selectedElement.properties?.rotation || 0]}
+                    min={-180}
+                    max={180}
+                    step={1}
+                    className="w-full"
+                    onValueChange={(values) => handlePropertyChange('rotation', values[0])}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>
