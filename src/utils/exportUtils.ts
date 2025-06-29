@@ -4,7 +4,7 @@ import type { VideoExportData, TimelineClip } from '@/lib/services/remotion-lamb
 // You'll need to adjust these based on your actual store types
 interface EditorClip {
     id: string;
-    type: 'video' | 'audio' | 'image' | 'text';
+    type: 'video' | 'audio' | 'image' | 'text' | 'subtitle';
     startTime: number;
     endTime: number;
     duration: number;
@@ -28,23 +28,25 @@ interface EditorState {
  * Converts video editor store data to the format required for Remotion Lambda export
  */
 export function convertEditorDataToExportData(editorState: EditorState): VideoExportData {
-    // Convert editor clips to export format
-    const exportClips: TimelineClip[] = editorState.clips.map(clip => ({
-        id: clip.id,
-        type: clip.type,
-        startTime: clip.startTime,
-        endTime: clip.endTime,
-        duration: clip.duration,
-        src: clip.src,
-        content: clip.content,
-        trackId: clip.trackId,
-        // Include any additional properties
-        ...Object.fromEntries(
-            Object.entries(clip).filter(([key]) =>
-                !['id', 'type', 'startTime', 'endTime', 'duration', 'src', 'content', 'trackId'].includes(key)
-            )
-        ),
-    }));
+    // Convert editor clips to export format, filtering out subtitle clips as they're not supported by Remotion yet
+    const exportClips: TimelineClip[] = editorState.clips
+        .filter(clip => clip.type !== 'subtitle') // Filter out subtitle clips for now
+        .map(clip => ({
+            id: clip.id,
+            type: clip.type as 'video' | 'audio' | 'image' | 'text', // Type assertion since we filtered out subtitle
+            startTime: clip.startTime,
+            endTime: clip.endTime,
+            duration: clip.duration,
+            src: clip.src,
+            content: clip.content,
+            trackId: clip.trackId,
+            // Include any additional properties
+            ...Object.fromEntries(
+                Object.entries(clip).filter(([key]) =>
+                    !['id', 'type', 'startTime', 'endTime', 'duration', 'src', 'content', 'trackId'].includes(key)
+                )
+            ),
+        }));
 
     return {
         clips: exportClips,

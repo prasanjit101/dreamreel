@@ -27,6 +27,11 @@ export interface TimelineElement {
         volume?: number; // For audio/video
         x?: number; // For image/text/video position
         y?: number; // For image/text/video position
+        scale?: number; // For image/text scaling (default: 1)
+        width?: number; // For image/text width
+        height?: number; // For image/text height
+        rotation?: number; // For image/text rotation in degrees
+        opacity?: number; // For image/text opacity (0-1)
 
         // Text specific
         text?: string;

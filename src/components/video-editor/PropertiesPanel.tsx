@@ -264,27 +264,71 @@ export function PropertiesPanel({ className }: { className?: string }) {
 
           {/* Position Properties for Text/Image */}
           {(selectedElement.type === 'text' || selectedElement.type === 'image') && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="x" className="text-xs">X Position</Label>
-                <Input
-                  id="x"
-                  type="number"
-                  value={selectedElement.properties?.x || 0}
-                  onChange={(e) => handlePropertyChange('x', parseInt(e.target.value) || 0)}
-                  className="h-8 text-xs"
-                />
+            <div className="space-y-4">
+              {/* Position Controls */}
+              <div className="space-y-3">
+                <Label className="text-xs font-medium">Position</Label>
+
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="x-slider" className="text-xs">X Position</Label>
+                      <span className="text-xs text-muted-foreground min-w-[40px]">
+                        {selectedElement.properties?.x || 0}px
+                      </span>
+                    </div>
+                    <Slider
+                      id="x-slider"
+                      value={[selectedElement.properties?.x || 0]}
+                      min={-500}
+                      max={500}
+                      step={1}
+                      className="w-full"
+                      onValueChange={(values) => handlePropertyChange('x', values[0])}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="y-slider" className="text-xs">Y Position</Label>
+                      <span className="text-xs text-muted-foreground min-w-[40px]">
+                        {selectedElement.properties?.y || 0}px
+                      </span>
+                    </div>
+                    <Slider
+                      id="y-slider"
+                      value={[selectedElement.properties?.y || 0]}
+                      min={-500}
+                      max={500}
+                      step={1}
+                      className="w-full"
+                      onValueChange={(values) => handlePropertyChange('y', values[0])}
+                    />
+                  </div>
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="y" className="text-xs">Y Position</Label>
-                <Input
-                  id="y"
-                  type="number"
-                  value={selectedElement.properties?.y || 0}
-                  onChange={(e) => handlePropertyChange('y', parseInt(e.target.value) || 0)}
-                  className="h-8 text-xs"
-                />
+
+              {/* Size Controls */}
+              <div className="space-y-3">
+                <Label className="text-xs font-medium">Size</Label>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="scale-slider" className="text-xs">Scale</Label>
+                    <span className="text-xs text-muted-foreground min-w-[40px]">
+                      {Math.round((selectedElement.properties?.scale || 1) * 100)}%
+                    </span>
+                  </div>
+                  <Slider
+                    id="scale-slider"
+                    value={[(selectedElement.properties?.scale || 1) * 100]}
+                    min={10}
+                    max={300}
+                    step={5}
+                    className="w-full"
+                    onValueChange={(values) => handlePropertyChange('scale', values[0] / 100)}
+                  />
+                </div>
               </div>
             </div>
           )}

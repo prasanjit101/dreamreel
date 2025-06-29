@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SignOutBtn } from '../SignOutBtn';
 import { Logo } from '../Logo';
+import { VideoExportData } from '@/lib/services/remotion-lambda';
 
 // Define aspect ratio options
 const aspectRatioOptions: Option[] = [
@@ -104,7 +105,7 @@ export function Navbar() {
       {/* Right section - Actions */}
       <div className="flex items-center gap-2">
         <ExportButton
-          exportData={exportData}
+          exportData={exportData as VideoExportData}
           disabled={!hasValidContent}
         />
 

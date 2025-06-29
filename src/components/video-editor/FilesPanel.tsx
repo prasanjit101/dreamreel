@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ElevenLabsTTSModal } from './ElevenLabsTTSModal';
 import { SubtitleEditorModal } from './SubtitleEditorModal';
+import { ImageModal } from './ImageModal';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 
 /**
  * FilesPanel Component
@@ -26,8 +28,9 @@ import { SubtitleEditorModal } from './SubtitleEditorModal';
  * Now supports professional drag and drop to timeline tracks and subtitle editing.
  */
 export function FilesPanel() {
-  const { mediaFiles, actions } = useVideoEditorStore();
+  const { mediaFiles, actions, aspectRatio } = useVideoEditorStore();
   const [isTTSModalOpen, setIsTTSModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [subtitleEditModal, setSubtitleEditModal] = useState<{
     open: boolean;
     mediaFile: any;
@@ -64,7 +67,7 @@ export function FilesPanel() {
       }
     };
     
-    actions.addTimelineElement(timelineElement);
+    actions.addTimelineElement(timelineElement as TimelineElement);
   };
 
   const handleDeleteFile = (fileId: string) => {
@@ -73,6 +76,36 @@ export function FilesPanel() {
 
   const handleEditSubtitle = (mediaFile: any) => {
     setSubtitleEditModal({ open: true, mediaFile });
+  };
+
+  const handleImageImport = (imageData: string, fileName: string) => {
+    // Convert base64 data URL to blob
+    const base64Data = imageData.split(',')[1];
+    const mimeType = imageData.split(';')[0].split(':')[1];
+
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mimeType });
+
+    // Create a File object
+    const file = new File([blob], fileName, { type: mimeType });
+
+    // Create media file entry
+    const mediaFile = {
+      id: `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: fileName,
+      type: 'image' as const,
+      file,
+      url: imageData, // Use the data URL directly
+      duration: 5, // Default duration for images
+    };
+
+    // Add to media files
+    actions.addMediaFile(mediaFile);
   };
 
   const handleDragStart = (event: React.DragEvent, mediaFile: any) => {
@@ -133,14 +166,18 @@ export function FilesPanel() {
                 <Volume2 className="w-4 h-4 mr-2" />
                 Generate Audio (Eleven Labs)
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { }}>
+                <Volume2 className="w-4 h-4 mr-2" />
+                Add text
+              </DropdownMenuItem>
               {/* Future options can be added here */}
               <DropdownMenuItem disabled>
                 <Plus className="w-4 h-4 mr-2" />
                 Generate Video (Coming Soon)
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
+              <DropdownMenuItem onClick={() => setIsImageModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Generate Image (Coming Soon)
+                Generate Image (Gemini)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -263,6 +300,14 @@ export function FilesPanel() {
           onOpenChange={(open) => setSubtitleEditModal({ open, mediaFile: null })}
           mediaFile={subtitleEditModal.mediaFile}
         />
+
+      {/* Image Generation Modal */}
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onImport={handleImageImport}
+        aspectRatio={aspectRatio}
+      />
     </div>
   );
 }

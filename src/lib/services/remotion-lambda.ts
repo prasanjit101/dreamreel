@@ -4,7 +4,7 @@ import { env } from 'env';
 
 export interface TimelineClip {
     id: string;
-    type: 'video' | 'audio' | 'image' | 'text';
+    type: 'video' | 'audio' | 'image' | 'text' | 'subtitle';
     startTime: number;
     endTime: number;
     duration: number;
