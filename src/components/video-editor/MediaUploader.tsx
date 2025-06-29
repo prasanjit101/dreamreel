@@ -60,7 +60,8 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           toast.success(`${mediaFile.name} added to timeline`);
         } else {
           // Just add to media library
-          toast.success(`${mediaFile.name} imported to media library`);
+          const fileTypeText = mediaFile.type === 'subtitle' ? 'subtitle file' : `${mediaFile.type} file`;
+          toast.success(`${mediaFile.name} imported as ${fileTypeText}`);
         }
       } catch (error) {
         console.error('Error loading media file:', error);
@@ -89,7 +90,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
-          accept="video/*,audio/*,image/*"
+          accept="video/*,audio/*,image/*,.srt"
           multiple
         />
         <Button
@@ -112,7 +113,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        accept="video/*,audio/*,image/*"
+        accept="video/*,audio/*,image/*,.srt"
         multiple
       />
       <Button
@@ -126,7 +127,7 @@ export function MediaUploader({ variant = 'dropzone', className }: MediaUploader
       <div className="space-y-2">
         <h3 className="text-foreground font-medium">Click to upload media files</h3>
         <p className="text-muted-foreground text-sm">
-          Supports video, audio, and image files
+          Supports video, audio, image, and subtitle (.srt) files
         </p>
       </div>
     </div>

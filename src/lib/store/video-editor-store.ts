@@ -68,6 +68,17 @@ export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
             ...(element.type === 'video' && { volume: element.properties?.volume ?? 1, resolution: element.properties?.resolution ?? '1080p', playbackSpeed: element.properties?.playbackSpeed ?? 1 }),
             ...(element.type === 'image' && { displayDuration: element.properties?.displayDuration ?? 5 }),
             ...(element.type === 'text' && { text: element.properties?.text ?? 'New Text', fontSize: element.properties?.fontSize ?? 24, fontFamily: element.properties?.fontFamily ?? 'Arial', color: element.properties?.color ?? '#ffffff' }),
+            ...(element.type === 'subtitle' && { 
+              subtitleEntries: element.properties?.subtitleEntries ?? [],
+              subtitleStyle: element.properties?.subtitleStyle ?? {
+                fontSize: 24,
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                position: 'bottom',
+                alignment: 'center'
+              }
+            }),
           }
         };
 

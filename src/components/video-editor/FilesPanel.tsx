@@ -5,7 +5,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
 import { MediaUploader } from './MediaUploader';
 import { Button } from "@/components/ui/button";
-import { Trash2, Play, GripVertical, Plus, Volume2 } from 'lucide-react';
+import { Trash2, Play, GripVertical, Plus, Volume2, Edit } from 'lucide-react';
 import { formatFileSize, formatDuration } from '@/utils/mediaUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ElevenLabsTTSModal } from './ElevenLabsTTSModal';
+import { SubtitleEditorModal } from './SubtitleEditorModal';
 
 /**
  * FilesPanel Component
@@ -22,17 +23,23 @@ import { ElevenLabsTTSModal } from './ElevenLabsTTSModal';
  * This component displays all imported media files and provides functionality
  * to manage them. It shows file information like name, size, duration, and
  * provides options to add files to timeline or delete them.
- * Now supports professional drag and drop to timeline tracks.
+ * Now supports professional drag and drop to timeline tracks and subtitle editing.
  */
 export function FilesPanel() {
   const { mediaFiles, actions } = useVideoEditorStore();
   const [isTTSModalOpen, setIsTTSModalOpen] = useState(false);
+  const [subtitleEditModal, setSubtitleEditModal] = useState<{
+    open: boolean;
+    mediaFile: any;
+  }>({ open: false, mediaFile: null });
 
   const handleAddToTimeline = (mediaFile: any) => {
     // Determine track based on media type
     let track = 0;
     if (mediaFile.type === 'audio') track = 1;
+    else if (mediaFile.type === 'text') track = 2;
     else if (mediaFile.type === 'image') track = 3;
+    else if (mediaFile.type === 'subtitle') track = 4;
     else if (mediaFile.type === 'video') track = 0;
     
     // Create timeline element
@@ -44,7 +51,16 @@ export function FilesPanel() {
       track,
       mediaFile,
       properties: {
-        volume: mediaFile.type === 'audio' || mediaFile.type === 'video' ? 1 : undefined
+        volume: mediaFile.type === 'audio' || mediaFile.type === 'video' ? 1 : undefined,
+        subtitleEntries: mediaFile.type === 'subtitle' ? mediaFile.subtitleEntries : undefined,
+        subtitleStyle: mediaFile.type === 'subtitle' ? {
+          fontSize: 24,
+          fontFamily: 'Arial',
+          color: '#ffffff',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          position: 'bottom',
+          alignment: 'center'
+        } : undefined
       }
     };
     
@@ -53,6 +69,10 @@ export function FilesPanel() {
 
   const handleDeleteFile = (fileId: string) => {
     actions.removeMediaFile(fileId);
+  };
+
+  const handleEditSubtitle = (mediaFile: any) => {
+    setSubtitleEditModal({ open: true, mediaFile });
   };
 
   const handleDragStart = (event: React.DragEvent, mediaFile: any) => {
@@ -154,7 +174,9 @@ export function FilesPanel() {
                         <div className={`w-2 h-2 rounded-full ${
                           file.type === 'video' ? 'bg-blue-500' :
                           file.type === 'audio' ? 'bg-green-500' :
-                          'bg-purple-500'
+                          file.type === 'image' ? 'bg-purple-500' :
+                          file.type === 'subtitle' ? 'bg-yellow-500' :
+                          'bg-orange-500'
                         }`} />
                         <TooltipProvider>
                           <Tooltip>
@@ -177,12 +199,32 @@ export function FilesPanel() {
                             <span>Duration: {formatDuration(file.duration)}</span>
                           )}
                         </div>
-                        <div className="capitalize">Type: {file.type}</div>
+                        <div className="capitalize">
+                          Type: {file.type}
+                          {file.type === 'subtitle' && file.subtitleEntries && (
+                            <span className="ml-2 text-muted-foreground">
+                              ({file.subtitleEntries.length} entries)
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-1">
+                    {/* Edit button for subtitle files */}
+                    {file.type === 'subtitle' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditSubtitle(file)}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Edit subtitles"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="ghost"
                       size="sm"
@@ -213,6 +255,13 @@ export function FilesPanel() {
         <ElevenLabsTTSModal 
           open={isTTSModalOpen} 
           onOpenChange={setIsTTSModalOpen} 
+        />
+
+        {/* Subtitle Editor Modal */}
+        <SubtitleEditorModal
+          open={subtitleEditModal.open}
+          onOpenChange={(open) => setSubtitleEditModal({ open, mediaFile: null })}
+          mediaFile={subtitleEditModal.mediaFile}
         />
     </div>
   );

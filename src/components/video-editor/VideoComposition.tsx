@@ -11,8 +11,7 @@ import {
   Sequence
 } from 'remotion';
 import { useVideoEditorStore } from '@/lib/store/video-editor-store';
-import { TimelineElement } from '@/lib/store/video-editor-store.types';
-
+import { TimelineElement, SubtitleEntry } from '@/lib/store/video-editor-store.types';
 
 interface VideoCompositionProps {
   // Props can be passed from the player if needed
@@ -106,7 +105,99 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, currentTime 
             {element.properties?.text || 'Sample Text'}
           </AbsoluteFill>
         )}
+
+        {element.type === 'subtitle' && element.properties?.subtitleEntries && (
+          <SubtitleRenderer
+            subtitleEntries={element.properties.subtitleEntries}
+            currentTime={elementCurrentTime}
+            style={element.properties.subtitleStyle}
+          />
+        )}
       </AbsoluteFill>
     </Sequence>
+  );
+};
+
+interface SubtitleRendererProps {
+  subtitleEntries: SubtitleEntry[];
+  currentTime: number;
+  style?: {
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string;
+    backgroundColor?: string;
+    position?: 'bottom' | 'top' | 'center';
+    alignment?: 'left' | 'center' | 'right';
+  };
+}
+
+const SubtitleRenderer: React.FC<SubtitleRendererProps> = ({ 
+  subtitleEntries, 
+  currentTime, 
+  style = {} 
+}) => {
+  // Find the current subtitle entry
+  const currentSubtitle = subtitleEntries.find(entry => 
+    currentTime >= entry.start && currentTime <= entry.end
+  );
+
+  if (!currentSubtitle) {
+    return null;
+  }
+
+  const {
+    fontSize = 24,
+    fontFamily = 'Arial',
+    color = '#ffffff',
+    backgroundColor = 'rgba(0, 0, 0, 0.7)',
+    position = 'bottom',
+    alignment = 'center'
+  } = style;
+
+  // Calculate position styles
+  const getPositionStyles = () => {
+    const baseStyles = {
+      position: 'absolute' as const,
+      left: 0,
+      right: 0,
+      padding: '20px',
+      display: 'flex',
+      justifyContent: alignment === 'left' ? 'flex-start' : 
+                     alignment === 'right' ? 'flex-end' : 'center',
+    };
+
+    switch (position) {
+      case 'top':
+        return { ...baseStyles, top: 0, alignItems: 'flex-start' };
+      case 'center':
+        return { ...baseStyles, top: '50%', transform: 'translateY(-50%)', alignItems: 'center' };
+      case 'bottom':
+      default:
+        return { ...baseStyles, bottom: 0, alignItems: 'flex-end' };
+    }
+  };
+
+  return (
+    <AbsoluteFill>
+      <div style={getPositionStyles()}>
+        <div
+          style={{
+            fontSize: `${fontSize}px`,
+            fontFamily,
+            color,
+            backgroundColor,
+            padding: '8px 16px',
+            borderRadius: '4px',
+            textAlign: alignment,
+            lineHeight: 1.2,
+            maxWidth: '80%',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {currentSubtitle.text}
+        </div>
+      </div>
+    </AbsoluteFill>
   );
 };

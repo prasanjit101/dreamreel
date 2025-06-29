@@ -25,7 +25,7 @@ export default function Timeline() {
     duration,           // Total duration of the video in seconds
     volume,             // Current volume level (0-1)
     isFileLoaded,       // Whether a video file has been loaded
-    timelineElements,   // Array of all elements (clips, audio, text, images) on the timeline
+    timelineElements,   // Array of all elements (clips, audio, text, images, subtitles) on the timeline
     selectedElementId,  // ID of the currently selected timeline element
     actions             // Actions to modify the video editor state
   } = useVideoEditorStore();
@@ -64,9 +64,9 @@ export default function Timeline() {
   const trackNumbers = Object.keys(trackGroups).map(Number).sort((a, b) => a - b);
 
   // Determine the total number of tracks to display.
-  // Ensures at least 4 tracks (Video, Audio, Text, Image) are visible,
+  // Ensures at least 5 tracks (Video, Audio, Text, Image, Subtitle) are visible,
   // or more if elements exist on higher-numbered tracks.
-  const minTracks = Math.max(4, trackNumbers.length);
+  const minTracks = Math.max(5, trackNumbers.length);
   const allTrackNumbers = Array.from({ length: minTracks }, (_, i) => i);
 
   // Helper function to provide a human-readable label for each track number
@@ -76,6 +76,7 @@ export default function Timeline() {
       case 1: return 'Audio';
       case 2: return 'Text';
       case 3: return 'Image';
+      case 4: return 'Subtitle';
       default: return `Track ${trackNumber + 1}`; // For additional custom tracks
     }
   };
@@ -100,7 +101,7 @@ export default function Timeline() {
       {/* Main Timeline Area */}
       <div className="flex-1 flex">
         {/* Track Labels Section */}
-        {/* Displays labels for each track (e.g., Video, Audio, Text). */}
+        {/* Displays labels for each track (e.g., Video, Audio, Text, Subtitle). */}
         <TrackLabels
           allTrackNumbers={allTrackNumbers}
           getTrackLabel={getTrackLabel}

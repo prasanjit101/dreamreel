@@ -1,15 +1,23 @@
 export interface MediaFile {
     id: string;
     name: string;
-    type: 'video' | 'audio' | 'image';
+    type: 'video' | 'audio' | 'image' | 'subtitle';
     url: string;
     duration?: number;
     file: File;
+    subtitleEntries?: SubtitleEntry[];
+}
+
+export interface SubtitleEntry {
+    id: string;
+    start: number; // in seconds
+    end: number; // in seconds
+    text: string;
 }
 
 export interface TimelineElement {
     id: string;
-    type: 'video' | 'audio' | 'image' | 'text';
+    type: 'video' | 'audio' | 'image' | 'text' | 'subtitle';
     startTime: number;
     duration: number;
     track: number;
@@ -32,6 +40,17 @@ export interface TimelineElement {
 
         // Image specific
         displayDuration?: number; // For images
+
+        // Subtitle specific
+        subtitleEntries?: SubtitleEntry[];
+        subtitleStyle?: {
+            fontSize?: number;
+            fontFamily?: string;
+            color?: string;
+            backgroundColor?: string;
+            position?: 'bottom' | 'top' | 'center';
+            alignment?: 'left' | 'center' | 'right';
+        };
     };
 }
 

@@ -37,6 +37,7 @@ export function TracksPanel() {
       case 1: return 'Audio Track';
       case 2: return 'Text Track';
       case 3: return 'Image Track';
+      case 4: return 'Subtitle Track';
       default: return `Track ${trackNumber + 1}`;
     }
   };
@@ -48,6 +49,7 @@ export function TracksPanel() {
       case 1: return 'bg-green-500/20 border-green-500/30';
       case 2: return 'bg-orange-500/20 border-orange-500/30';
       case 3: return 'bg-purple-500/20 border-purple-500/30';
+      case 4: return 'bg-yellow-500/20 border-yellow-500/30';
       default: return 'bg-gray-500/20 border-gray-500/30';
     }
   };
@@ -102,6 +104,7 @@ export function TracksPanel() {
                         trackNumber === 1 ? 'bg-green-500' :
                         trackNumber === 2 ? 'bg-orange-500' :
                         trackNumber === 3 ? 'bg-purple-500' :
+                        trackNumber === 4 ? 'bg-yellow-500' :
                         'bg-gray-500'
                       }`} />
                       <h4 className="text-foreground text-sm font-medium">
@@ -152,6 +155,11 @@ export function TracksPanel() {
                                 <IconComponent className="w-3 h-3 text-muted-foreground" />
                                 <span className="text-xs text-foreground truncate">
                                   {element.mediaFile?.name || element.properties?.text || `${element.type} element`}
+                                  {element.type === 'subtitle' && element.properties?.subtitleEntries && (
+                                    <span className="ml-2 text-muted-foreground">
+                                      ({element.properties.subtitleEntries.length} entries)
+                                    </span>
+                                  )}
                                 </span>
                               </div>
                               

@@ -1,5 +1,5 @@
 import { TimelineElement } from '@/lib/store/video-editor-store.types';
-import { Volume2, VolumeX, Type, Image, Video, Music } from 'lucide-react';
+import { Volume2, VolumeX, Type, Image, Video, Music, Subtitles } from 'lucide-react';
 import * as React from 'react';
 
 // Snapping configuration
@@ -61,7 +61,7 @@ export const findNearestSnap = (time: number, snapPoints: number[], pixelsPerSec
 
 /**
  * Returns the appropriate Tailwind CSS classes for a clip's background and border color based on its type.
- * @param elementType The type of the timeline element (e.g., 'video', 'audio', 'image', 'text').
+ * @param elementType The type of the timeline element (e.g., 'video', 'audio', 'image', 'text', 'subtitle').
  * @returns A string of Tailwind CSS classes.
  */
 export const getClipColor = (elementType: TimelineElement['type']) => {
@@ -74,6 +74,8 @@ export const getClipColor = (elementType: TimelineElement['type']) => {
       return 'bg-purple-500/80 border-purple-400 hover:bg-purple-500/90';
     case 'text':
       return 'bg-orange-500/80 border-orange-400 hover:bg-orange-500/90';
+    case 'subtitle':
+      return 'bg-yellow-500/80 border-yellow-400 hover:bg-yellow-500/90';
     default:
       return 'bg-gray-500/80 border-gray-400 hover:bg-gray-500/90';
   }
@@ -94,6 +96,8 @@ export const getClipIcon = (elementType: TimelineElement['type']) => {
       return Image;
     case 'text':
       return Type;
+    case 'subtitle':
+      return Subtitles;
     default:
       // Return a fallback icon for unknown types
       return Video;
@@ -126,6 +130,10 @@ export const isMediaTypeCompatibleWithTrack = (mediaType: string, trackNumber: n
       const imageCompatible = mediaType === 'image';
       console.log('Image track compatibility:', imageCompatible);
       return imageCompatible;
+    case 4:
+      const subtitleCompatible = mediaType === 'subtitle';
+      console.log('Subtitle track compatibility:', subtitleCompatible);
+      return subtitleCompatible;
     default: 
       console.log('Custom track - accepting all types');
       return true; // Custom tracks accept any type
@@ -143,6 +151,7 @@ export const getDefaultTrackForMediaType = (mediaType: string): number => {
     case 'audio': return 1;
     case 'text': return 2;
     case 'image': return 3;
+    case 'subtitle': return 4;
     default: return 0;
   }
 };
