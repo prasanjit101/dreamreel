@@ -4,3 +4,4 @@ hooks/use-toast.ts
 .vscode/*
 .github/instructions/*
 components/theme/*
+docs/*
