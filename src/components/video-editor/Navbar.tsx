@@ -21,14 +21,14 @@ import { VideoExportData } from '@/lib/services/remotion-lambda';
 
 // Define aspect ratio options
 const aspectRatioOptions: Option[] = [
-  { value: '16:9', label: '16:9 (Landscape)' },
-  { value: '9:16', label: '9:16 (Portrait)' },
-  { value: '1:1', label: '1:1 (Square)' },
-  { value: '4:3', label: '4:3 (Standard)' },
-  { value: '3:4', label: '3:4 (Portrait)' },
-  { value: '21:9', label: '21:9 (Ultrawide)' },
-  { value: '2:3', label: '2:3 (Portrait)' },
-  { value: '3:2', label: '3:2 (Landscape)' },
+  { value: '16:9', label: '16:9' },
+  { value: '9:16', label: '9:16' },
+  { value: '1:1', label: '1:1' },
+  { value: '4:3', label: '4:3' },
+  { value: '3:4', label: '3:4' },
+  { value: '21:9', label: '21:9' },
+  { value: '2:3', label: '2:3' },
+  { value: '3:2', label: '3:2' },
 ];
 
 export function Navbar() {

@@ -71,7 +71,7 @@ export function ImageModal({ isOpen, onClose, onImport, aspectRatio }: ImageModa
 
         // Create a filename based on the prompt and timestamp
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const fileName = `gemini-generated-${timestamp}.png`;
+        const fileName = `generated-image-${timestamp}.png`;
 
         // Pass the base64 data to the parent component
         onImport(`data:${generatedImage.mimeType};base64,${generatedImage.imageData}`, fileName);
@@ -96,7 +96,7 @@ export function ImageModal({ isOpen, onClose, onImport, aspectRatio }: ImageModa
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-purple-500" />
-                        Generate Image with Gemini
+                        Generate Image
                     </DialogTitle>
                 </DialogHeader>
 

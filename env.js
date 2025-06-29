@@ -28,7 +28,6 @@ export const env = createEnv({
     REMOTION_LAMBDA_SERVE_URL: z.string(),
     // Eleven Labs environment variables
     ELEVENLABS_API_KEY: z.string(),
-    ELEVENLABS_VOICE_ID: z.string().default('21m00Tcm4TlvDq8ikWAM'), // Default voice ID
     // Gemini environment variables
     GEMINI_API_KEY: z.string(),
   },
@@ -65,7 +64,6 @@ export const env = createEnv({
     REMOTION_LAMBDA_FUNCTION_NAME: process.env.REMOTION_LAMBDA_FUNCTION_NAME,
     REMOTION_LAMBDA_SERVE_URL: process.env.REMOTION_LAMBDA_SERVE_URL,
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
-    ELEVENLABS_VOICE_ID: process.env.ELEVENLABS_VOICE_ID,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   },
   /**

@@ -482,7 +482,7 @@ export function TimelineTracks({
 
   return (
     <>
-      <div ref={tracksRef} className="relative z-20">
+      <div ref={tracksRef} className="relative overflow-y-auto z-20">
         {allTrackNumbers.map(trackNumber => (
           <div 
             key={trackNumber} 

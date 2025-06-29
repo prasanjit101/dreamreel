@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Use provided voice ID or default from environment
-        const selectedVoiceId = voiceId || env.ELEVENLABS_VOICE_ID;
+        const selectedVoiceId = voiceId || 'oyxaSt75JW8l04MCJaSo';
 
         // Prepare the request to Eleven Labs API
         const elevenLabsUrl = `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}`;

@@ -182,14 +182,6 @@ export function TimelineControls({
     toast.success(`Element split into two parts at ${formatDuration(currentTime)}`);
   };
 
-  const handleAddTrackClick = (trackType: 'audio' | 'video' | 'image' | 'text') => {
-    setSelectedTrackType(trackType);
-    setCurrentConfig({});
-    setCurrentFile(undefined);
-    setDialogOpen(true);
-    setDropdownOpen(false);
-  };
-
   const handleConfigChange = (config: any) => {
     setCurrentConfig(config);
     if (config.file) {
@@ -290,33 +282,6 @@ export function TimelineControls({
         >
           <ZoomIn className="w-4 h-4" />
         </Button>
-
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground p-2"
-              title="Add Track"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleAddTrackClick('audio')}>
-              Audio
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddTrackClick('video')}>
-              Video
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddTrackClick('image')}>
-              Image
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAddTrackClick('text')}>
-              Text
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <Button
           variant="ghost"

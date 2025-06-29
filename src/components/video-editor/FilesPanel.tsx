@@ -174,7 +174,7 @@ export function FilesPanel() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsImageModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Generate Image (Gemini)
+                Generate Image
               </DropdownMenuItem>
               {/* Future options can be added here */}
               <DropdownMenuItem disabled>
