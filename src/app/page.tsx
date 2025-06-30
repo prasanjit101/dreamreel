@@ -27,7 +27,7 @@ export default async function Home() {
           <div className="flex flex-col border-r border-border">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto border-b border-border">
+              <div className="flex-1 max-h-[500px] overflow-y-auto border-b border-border">
                 <AssetBox />
               </div>
               <div className="flex-1 overflow-y-auto">

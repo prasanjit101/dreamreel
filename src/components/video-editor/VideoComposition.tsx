@@ -120,11 +120,11 @@ const TextRenderer: React.FC<TextRendererProps> = ({ element }) => {
       right: 0,
       padding: '20px',
       display: 'flex',
-      justifyContent: element.properties?.alignment === 'left' ? 'flex-start' : 
-                     element.properties?.alignment === 'right' ? 'flex-end' : 'center',
+      justifyContent: element.properties?.subtitleStyle?.alignment === 'left' ? 'flex-start' :
+        element.properties?.subtitleStyle?.alignment === 'right' ? 'flex-end' : 'center',
     };
 
-    switch (element.properties?.position) {
+    switch (element.properties?.subtitleStyle?.position) {
       case 'top':
         return { ...baseStyles, top: 0, alignItems: 'flex-start' };
       case 'bottom':
@@ -143,10 +143,10 @@ const TextRenderer: React.FC<TextRendererProps> = ({ element }) => {
             fontSize: `${element.properties?.fontSize || 48}px`,
             fontFamily: element.properties?.fontFamily || 'Arial',
             color: element.properties?.color || '#ffffff',
-            backgroundColor: element.properties?.backgroundColor || 'transparent',
-            padding: element.properties?.backgroundColor && element.properties.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '8px 16px' : '0',
-            borderRadius: element.properties?.backgroundColor && element.properties.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '4px' : '0',
-            textAlign: element.properties?.alignment || 'center',
+            backgroundColor: element.properties?.subtitleStyle?.backgroundColor || 'transparent',
+            padding: element.properties?.subtitleStyle?.backgroundColor && element.properties.subtitleStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '8px 16px' : '0',
+            borderRadius: element.properties?.subtitleStyle?.backgroundColor && element.properties.subtitleStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' ? '4px' : '0',
+            textAlign: element.properties?.subtitleStyle?.alignment || 'center',
             lineHeight: 1.2,
             maxWidth: '80%',
             wordWrap: 'break-word',

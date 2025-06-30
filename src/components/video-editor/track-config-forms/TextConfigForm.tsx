@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { TimelineElement } from '@/lib/store/video-editor-store';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
+
 
 interface TextConfigFormProps {
   onConfigChange: (config: { text: string; fontSize: number; fontFamily: string; color: string }) => void;

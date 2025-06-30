@@ -32,7 +32,7 @@ interface TextCreationModalProps {
 }
 
 export function TextCreationModal({ open, onOpenChange }: TextCreationModalProps) {
-  const [textContent, setTextContent] = useState('Enter your text here');
+  const [textContent, setTextContent] = useState('');
   const [fontSize, setFontSize] = useState(48);
   const [fontFamily, setFontFamily] = useState('Arial');
   const [color, setColor] = useState('#ffffff');
@@ -61,14 +61,16 @@ export function TextCreationModal({ open, onOpenChange }: TextCreationModalProps
         fontSize,
         fontFamily,
         color,
-        backgroundColor,
-        position,
-        alignment,
+        opacity: 1,
+        rotation: 0,
+        scale: 1,
         x: 0, // Center position
         y: 0, // Center position
-        scale: 1,
-        opacity: 1,
-        rotation: 0
+        subtitleStyle: {
+          position,
+          alignment,
+          backgroundColor,
+        }
       }
     };
 
@@ -86,7 +88,7 @@ export function TextCreationModal({ open, onOpenChange }: TextCreationModalProps
   };
 
   const handleReset = () => {
-    setTextContent('Enter your text here');
+    setTextContent('');
     setFontSize(48);
     setFontFamily('Arial');
     setColor('#ffffff');

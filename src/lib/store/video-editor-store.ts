@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { VideoEditorState, MediaFile, TimelineElement, SidebarTab } from './video-editor-store.types';
+import { VideoEditorState, MediaFile, SidebarTab } from './video-editor-store.types';
+import { TimelineElement } from '@/lib/store/video-editor-store.types';
 
 
 export const useVideoEditorStore = create<VideoEditorState>((set, get) => ({
